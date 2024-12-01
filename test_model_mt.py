@@ -28,14 +28,15 @@ from transformers import (
 
 import torch
 
-base_model_id       = 'google/gemma-2-2b'
+base_model_id       = 'croissantllm/CroissantLLMBase'
+tokenizer_id        = 'gwellm-tokenizer'
 adapter_model_id    = 'gwellm'
 
-query = "Demat dit, penaos"
-#query = "Le ciel est"
+#query = "Demat"
+query = "Le ciel est"
 
 # load tokenizer  base model
-tokenizer = AutoTokenizer.from_pretrained(base_model_id)
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_id)
 tokenizer.pad_token = tokenizer.eos_token # Most LLMs don't have a pad token by default
 model = AutoModelForCausalLM.from_pretrained(base_model_id, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
 
