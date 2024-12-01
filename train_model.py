@@ -31,13 +31,16 @@ from transformers import (
     TrainingArguments,
 )
 
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training
 
 import math
 import torch
 
-model_id = 'croissantllm/CroissantLLMBase'
-tokenizer_id = 'gwellm-tokenizer'
+model_id        = 'croissantllm/CroissantLLMBase'
+output_model_id = 'gwellm'
+tokenizer_id    = 'gwellm-tokenizer'
+
+resume = True
 
 ############### PREPARE TOKENIZER
 
@@ -49,7 +52,7 @@ tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad tok
 # saved in ~/.cache/huggingface/datasets
 dataset = load_dataset("oscar-corpus/OSCAR-2201",
                         language="br", 
-                        split="train")
+                        split="train[10%:20%]") # see https://huggingface.co/docs/datasets/v1.11.0/splits.html
 
 print(dataset)
 
@@ -100,11 +103,17 @@ model.config.use_cache = False
 model = prepare_model_for_kbit_training(model)
 
 # load the PEFT model
-model = get_peft_model(model,lora_config)
+if not resume:
+    model = get_peft_model(model,lora_config)
+else:
+    model = PeftModel.from_pretrained(
+                model, 
+                output_model_id, 
+                is_trainable=True, 
+                quantization_config=quant_config,
+                device_map='auto')
 
 ############### PEFT FINETUNING ###############
-
-output_model_id = 'gwellm'
 
 # set training arguments
 training_args = TrainingArguments(
@@ -134,5 +143,7 @@ print("-> start post-evaluation...")
 eval_results = trainer.evaluate()
 print(f">>> perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 
+print("-> saving model...")
+trainer.save_model(output_model_id)
 
 
