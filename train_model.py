@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from datasets import Dataset, load_dataset
+from datasets import load_dataset
 
 from transformers import (
     AutoTokenizer, 
@@ -31,16 +31,17 @@ from transformers import (
     TrainingArguments,
 )
 
-from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 import math
 import torch
 
 model_id = 'croissantllm/CroissantLLMBase'
+tokenizer_id = 'gwellm-tokenizer'
 
 ############### PREPARE TOKENIZER
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_id)
 tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad token by default
 
 ############### PREPARE DATASET ###############
