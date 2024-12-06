@@ -27,7 +27,8 @@ from transformers import (
     AutoModelForSeq2SeqLM,
     DataCollatorForSeq2Seq,
     Seq2SeqTrainingArguments, 
-    Seq2SeqTrainer
+    Seq2SeqTrainer,
+    pipeline
 )
 
 import evaluate
@@ -59,6 +60,7 @@ prefix = "traduis de français en breton: "
 
 def preprocess_function(sample):
     if not sample[source_lang] or not sample[target_lang]:
+        print("invalid sample!")
         return {"input_ids": [], 'attention_mask': [], 'labels': []}
     
     #print(sample[source_lang])
@@ -72,11 +74,12 @@ def preprocess_function(sample):
 tokenized_dataset = dataset.map(preprocess_function, batched=False)
 
 # filter out invalid samples
-#tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) > 0)
+print(tokenized_dataset)
+tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) > 0)
+print(tokenized_dataset)
 
-print(tokenized_dataset["train"][0])
-print(tokenized_dataset["test"][0])
-exit(0)
+#print(tokenized_dataset["train"][0])
+#print(tokenized_dataset["test"][0])
 
 data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=checkpoint, return_tensors="tf")
 
@@ -111,13 +114,14 @@ model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint)
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="my_awesome_breton_model",
+    report_to='none',
     eval_strategy="epoch",
     learning_rate=2e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
+    per_device_train_batch_size=1, #16
+    per_device_eval_batch_size=1, #16
     weight_decay=0.01,
     save_total_limit=3,
-    num_train_epochs=2,
+    num_train_epochs=1,
     predict_with_generate=True,
     fp16=True, #change to bf16=True for XPU
     push_to_hub=False,
@@ -129,9 +133,17 @@ trainer = Seq2SeqTrainer(
     train_dataset=tokenized_dataset["train"],
     eval_dataset=tokenized_dataset["test"],
     processing_class=tokenizer,
-    data_collator=data_collator,
+    #data_collator=data_collator,
     compute_metrics=compute_metrics,
 )
 
 trainer.train()
+trainer.save_model("my_awesome_breton_model")
 
+text = "traduis de français en breton: j'apprends le breton à l'école."
+
+# Change `xx` to the language of the input and `yy` to the language of the desired output.
+# Examples: "en" for English, "fr" for French, "de" for German, "es" for Spanish, "zh" for Chinese, etc; translation_en_to_fr translates English to French
+# You can view all the lists of languages here - https://huggingface.co/languages
+translator = pipeline("translation_fr_to_br", model="my_awesome_breton_model")
+print(translator(text, max_length=256))
