@@ -45,12 +45,15 @@ dataset = dataset['train'].train_test_split(test_size=0.2)
 
 print(dataset["train"][0])
 
-checkpoint = "google-t5/t5-small"
+checkpoint_base = "google-t5/t5-small"
+checkpoint = "my_awesome_breton_model"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
 source_lang='fr'
 target_lang='br'
 prefix = "traduis de français en breton: "
+
+resume = False
 
 # def preprocess_function(samples):
 #     inputs = [prefix + sample[source_lang] for sample in samples]
@@ -81,7 +84,7 @@ print(tokenized_dataset)
 #print(tokenized_dataset["train"][0])
 #print(tokenized_dataset["test"][0])
 
-data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=checkpoint, return_tensors="tf")
+data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=checkpoint, return_tensors="pt")
 
 metric = evaluate.load("sacrebleu")
 
@@ -110,10 +113,11 @@ def compute_metrics(eval_preds):
     result = {k: round(v, 4) for k, v in result.items()}
     return result
 
-model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint)
+model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint if resume else checkpoint_base)
 
 training_args = Seq2SeqTrainingArguments(
-    output_dir="my_awesome_breton_model",
+    output_dir=checkpoint,
+    overwrite_output_dir=True,
     report_to='none',
     eval_strategy="epoch",
     learning_rate=2e-5,
@@ -133,12 +137,12 @@ trainer = Seq2SeqTrainer(
     train_dataset=tokenized_dataset["train"],
     eval_dataset=tokenized_dataset["test"],
     processing_class=tokenizer,
-    #data_collator=data_collator,
+    data_collator=data_collator,
     compute_metrics=compute_metrics,
 )
 
 trainer.train()
-trainer.save_model("my_awesome_breton_model")
+trainer.save_model(checkpoint)
 
 text = "traduis de français en breton: j'apprends le breton à l'école."
 

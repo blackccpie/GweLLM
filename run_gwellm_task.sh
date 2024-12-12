@@ -11,7 +11,7 @@ fi
 tasks=(
     "train_model.py: trains breton chat model"
     "train_model_mt.py: trains breton chat model (modified tokenizer)" 
-    "train_transcript_model.py: trains french <-> breton transcription model")
+    "train_translation_model.py: trains french <-> breton transcription model")
 
 # function to display the menu
 display_menu() {

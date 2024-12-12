@@ -20,15 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from transformers import pipeline, AutoModelForSeq2SeqLM
+from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
 text = "traduis de français en breton: j'apprends le breton à l'école."
 
 #translator = pipeline("translation_fr_to_br", model="my_awesome_breton_model", device='cuda')
 #print(translator(text, max_length=256))
 
-model = AutoModelForSeq2SeqLM.from_pretrained("my_awesome_breton_model")
-outputs = model.generate(   text,
+model = AutoModelForSeq2SeqLM.from_pretrained("my_awesome_breton_model", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("google-t5/t5-small")
+inputs = tokenizer([text], add_special_tokens=True, return_tensors="pt").to("cuda")
+outputs = model.generate(   **inputs,
                             max_new_tokens=40,
                             #return_dict = False   # this is needed to get a tensor as result
                         )
