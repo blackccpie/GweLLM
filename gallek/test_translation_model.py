@@ -1,6 +1,6 @@
 # The MIT License
 
-# Copyright (c) 2017-2017 Albert Murienne
+# Copyright (c) 2025 Albert Murienne
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,10 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
 text = "traduis de français en breton: j'apprends le breton à l'école."
 
-#translator = pipeline("translation_fr_to_br", model="my_awesome_breton_model", device='cuda')
-#print(translator(text, max_length=256))
+model = AutoModelForSeq2SeqLM.from_pretrained("gallek-m2m100-b33", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("facebook/m2m100_418M")
 
-model = AutoModelForSeq2SeqLM.from_pretrained("my_awesome_breton_model", device_map="auto")
-tokenizer = AutoTokenizer.from_pretrained("google-t5/t5-small")
-inputs = tokenizer([text], add_special_tokens=True, return_tensors="pt").to("cuda")
-outputs = model.generate(   **inputs,
-                            max_new_tokens=40,
-                            #return_dict = False   # this is needed to get a tensor as result
-                        )
-print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+translation_pipeline = pipeline("translation", model=model, tokenizer=tokenizer, src_lang='fr', tgt_lang='br', max_length=400)
+result = translation_pipeline(text)
+print(result[0]['translation_text'])
 

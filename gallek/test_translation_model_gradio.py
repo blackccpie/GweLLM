@@ -20,32 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from transformers import (
-    AutoTokenizer, 
-    AutoModelForCausalLM,
-    BitsAndBytesConfig
-)
-
+import gradio as gr
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 import torch
 
-base_model_id       = 'google/gemma-2-2b'
-adapter_model_id    = 'gwellm'
+#modelcard = "facebook/m2m100_418M"
+modelcard = "gallek-m2m100-b33"
 
-query = "Demat dit, penaos"
-#query = "Le ciel est"
+model = AutoModelForSeq2SeqLM.from_pretrained(modelcard)
+tokenizer = AutoTokenizer.from_pretrained("facebook/m2m100_418M")
 
-# load tokenizer  base model
-tokenizer = AutoTokenizer.from_pretrained(base_model_id)
-tokenizer.pad_token = tokenizer.eos_token # Most LLMs don't have a pad token by default
-model = AutoModelForCausalLM.from_pretrained(base_model_id, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
+def translate(text):
+    """
+    Translate the text from source lang to target lang
+    """
+    translation_pipeline = pipeline("translation", model=model, tokenizer=tokenizer, src_lang='fr', tgt_lang='br', max_length=400, device="cuda")
+    result = translation_pipeline(text)
+    return result[0]['translation_text']
 
- # load adapter model
-model.load_adapter(adapter_model_id)
-model.eval()
-model.config.use_cache = True
+demo = gr.Interface(
+    fn=translate,
+    inputs=[
+        gr.components.Textbox(label="Text"),
+    ],
+    outputs=["text"],
+    cache_examples=False,
+    title="Translation Demo",
+)
 
-with torch.no_grad():
-    inputs = tokenizer([query], add_special_tokens=True, return_tensors="pt").to("cuda")
-    outputs = model.generate(**inputs, max_new_tokens = 256, pad_token_id=tokenizer.pad_token_id)
-    print(f"\n\nADAPTER MODEL OUTPUT:\n{tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)}")
-
+demo.launch()
