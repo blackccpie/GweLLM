@@ -37,20 +37,29 @@ from datasets import load_dataset
 
 import numpy as np
 
-dataset = load_dataset("Bretagne/wikimedia_br_fr")
 
+#source_lang='fr'
+#target_lang='br'
+#dataset = load_dataset("Bretagne/wikimedia_br_fr")
+
+source_lang='français'
+target_lang='breton'
+dataset = load_dataset("Bretagne/ofis_publik_br-fr")
+
+print("loaded dataset infos:")
 print(dataset)
 
 dataset = dataset['train'].train_test_split(test_size=0.2)
 
 print(dataset["train"][0])
 
-checkpoint_base = "google-t5/t5-small"
+#checkpoint_base = "google-t5/t5-small"
+checkpoint_base="facebook/m2m100_418M"
 checkpoint = "my_awesome_breton_model"
-tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+tokenizer = AutoTokenizer.from_pretrained(checkpoint_base)
+tokenizer.src_lang = "fr"
+tokenizer.tgt_lang = "br"
 
-source_lang='fr'
-target_lang='br'
 prefix = "traduis de français en breton: "
 
 resume = False
@@ -62,6 +71,8 @@ resume = False
 #     return model_inputs
 
 def preprocess_function(sample):
+
+    # TODO
     if not sample[source_lang] or not sample[target_lang]:
         print("invalid sample!")
         return {"input_ids": [], 'attention_mask': [], 'labels': []}
@@ -77,14 +88,15 @@ def preprocess_function(sample):
 tokenized_dataset = dataset.map(preprocess_function, batched=False)
 
 # filter out invalid samples
-print(tokenized_dataset)
+old_len = len(tokenized_dataset)
 tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) > 0)
-print(tokenized_dataset)
+new_len = len(tokenized_dataset)
+print(f"removed {old_len-new_len} invalid samples from input dataset")
 
 #print(tokenized_dataset["train"][0])
 #print(tokenized_dataset["test"][0])
 
-data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=checkpoint, return_tensors="pt")
+data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=checkpoint_base, return_tensors="pt")
 
 metric = evaluate.load("sacrebleu")
 
@@ -120,9 +132,9 @@ training_args = Seq2SeqTrainingArguments(
     overwrite_output_dir=True,
     report_to='none',
     eval_strategy="epoch",
-    learning_rate=2e-5,
-    per_device_train_batch_size=1, #16
-    per_device_eval_batch_size=1, #16
+    learning_rate=5e-5,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
     weight_decay=0.01,
     save_total_limit=3,
     num_train_epochs=1,
@@ -144,10 +156,12 @@ trainer = Seq2SeqTrainer(
 trainer.train()
 trainer.save_model(checkpoint)
 
+#trainer.evaluate()
+
 text = "traduis de français en breton: j'apprends le breton à l'école."
 
 # Change `xx` to the language of the input and `yy` to the language of the desired output.
 # Examples: "en" for English, "fr" for French, "de" for German, "es" for Spanish, "zh" for Chinese, etc; translation_en_to_fr translates English to French
 # You can view all the lists of languages here - https://huggingface.co/languages
-translator = pipeline("translation_fr_to_br", model="my_awesome_breton_model")
+translator = pipeline("translation_fr_to_br", model="my_awesome_breton_model", device="cuda")
 print(translator(text, max_length=256))
