@@ -20,18 +20,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import context
+import requests
 
-from gallek import gallek
-from  tools import apertium
+def translate_br2fr(str, verbose=False):
+    """
+    Translates input string from breton to french
+    """
 
-text = "traduis de français en breton: j'apprends le breton à l'école."
+    # define the URL you want to send the request to
+    tr_url_template = "https://apertium.org/apy/translate?langpair={langpair}&q={input}"
 
-gk = gallek()
-result = gk.translate_fr2br(text)
+    # build final translation request URL
+    lp = 'br|fr'
+    tr_url = tr_url_template.format(langpair=lp, input=str)
 
-print("input text: " + text)
-print("Gallek translation: " + result)
-print("Apertium reverse translation: " + apertium.translate_br2fr(result))
+    if verbose:
+        print(tr_url)
 
+    # send a GET request
+    response = requests.get(tr_url)
 
+    tr = ""
+
+    # check if the request was successful
+    if response.status_code == 200:
+        # parse the JSON response
+        data = response.json()
+        tr = data['responseData']['translatedText']
+        if verbose:
+         print(f"apertium translation: {data['responseData']['translatedText']}")
+    else:
+        print(f'failed to retrieve apertium data: {response.status_code}')
+
+    return tr

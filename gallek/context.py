@@ -20,18 +20,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import context
-
-from gallek import gallek
-from  tools import apertium
-
-text = "traduis de français en breton: j'apprends le breton à l'école."
-
-gk = gallek()
-result = gk.translate_fr2br(text)
-
-print("input text: " + text)
-print("Gallek translation: " + result)
-print("Apertium reverse translation: " + apertium.translate_br2fr(result))
-
-
+import sys
+sys.path.append("..")
