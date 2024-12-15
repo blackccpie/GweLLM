@@ -22,7 +22,7 @@
 
 import requests
 
-def translate_br2fr(str, verbose=False):
+def translate_br2fr(str: str, verbose=False):
     """
     Translates input string from breton to french
     """

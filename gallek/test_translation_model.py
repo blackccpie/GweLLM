@@ -22,7 +22,7 @@
 
 import context
 
-from gallek import gallek
+from gallek_translator import gallek
 from  tools import apertium
 
 text = "traduis de français en breton: j'apprends le breton à l'école."

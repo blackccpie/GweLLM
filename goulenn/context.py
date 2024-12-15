@@ -20,22 +20,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import context
-
-from gallek.gallek_translator import gallek
-from datasets import load_dataset
-
-# saved in ~/.cache/huggingface/datasets
-dataset = load_dataset( "jpacifico/French-Alpaca-dataset-Instruct-110K",
-                        split="train", streaming=True)
-
-small_dataset = dataset.take(3)
-
-print(small_dataset)
-
-# instanciate gallek translator
-gk = gallek(chdir='../gallek/')
-
-for data in small_dataset:
-  print(data)
-  print(gk.translate_fr2br(data['instruction']))
+import sys
+sys.path.append("..")

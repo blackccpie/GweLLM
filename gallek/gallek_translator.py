@@ -20,22 +20,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import context
+from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
-from gallek.gallek_translator import gallek
-from datasets import load_dataset
+class gallek:
+    """
+    French to Breton translator based on fine-tuned M2M100 base model
+    """
 
-# saved in ~/.cache/huggingface/datasets
-dataset = load_dataset( "jpacifico/French-Alpaca-dataset-Instruct-110K",
-                        split="train", streaming=True)
+    __checkpoint_base = "facebook/m2m100_418M"
+    __checkpoint = "gallek-m2m100-b33"
 
-small_dataset = dataset.take(3)
+    def __init__(self, chdir: str='./'):
+        self.__tokenizer = AutoTokenizer.from_pretrained(self.__checkpoint_base)
+        self.__model = AutoModelForSeq2SeqLM.from_pretrained(chdir + self.__checkpoint, device_map="auto")
+        self.__translation_pipeline = pipeline("translation", model=self.__model, tokenizer=self.__tokenizer, src_lang='fr', tgt_lang='br', max_length=400)
 
-print(small_dataset)
-
-# instanciate gallek translator
-gk = gallek(chdir='../gallek/')
-
-for data in small_dataset:
-  print(data)
-  print(gk.translate_fr2br(data['instruction']))
+    def translate_fr2br(self, text: str):
+        return self.__translation_pipeline(text)[0]['translation_text']
