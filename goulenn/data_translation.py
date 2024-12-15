@@ -27,15 +27,23 @@ from datasets import load_dataset
 
 # saved in ~/.cache/huggingface/datasets
 dataset = load_dataset( "jpacifico/French-Alpaca-dataset-Instruct-110K",
-                        split="train", streaming=True)
+                        split="train")
 
-small_dataset = dataset.take(3)
+small_dataset = dataset.take(10)
 
 print(small_dataset)
 
 # instanciate gallek translator
 gk = gallek(chdir='../gallek/')
 
-for data in small_dataset:
-  print(data)
-  print(gk.translate_fr2br(data['instruction']))
+# define the translation functor
+def to_br(sample):
+  sample['instruction'] = gk.translate_fr2br(sample['instruction'])
+  sample['input'] = gk.translate_fr2br(sample['input'])
+  sample['output'] = gk.translate_fr2br(sample['output'])
+  print(sample)
+
+# translate the dataset to breton
+small_dataset.map(to_br)
+
+small_dataset.save_to_disk(dataset_path='alpaca-goulenn')

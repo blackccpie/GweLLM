@@ -46,6 +46,7 @@ demo = gr.Interface(
     outputs=["text"],
     cache_examples=False,
     title="Translation Demo",
+    allow_flagging='never'
 )
 
 demo.launch()
