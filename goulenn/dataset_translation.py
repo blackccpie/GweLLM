@@ -23,13 +23,18 @@
 import context
 
 from gallek.gallek_translator import gallek
-from datasets import load_dataset
+from datasets import load_dataset, DatasetInfo
+
+new_dataset_name_prefix = 'goulenn-alpaca'
 
 # saved in ~/.cache/huggingface/datasets
-dataset = load_dataset( "jpacifico/French-Alpaca-dataset-Instruct-110K",
+dataset = load_dataset( path="jpacifico/French-Alpaca-dataset-Instruct-110K",
                         split="train")
 
-small_dataset = dataset.take(10)
+# subsample dataset
+subset_size = 1
+small_dataset = dataset.take(subset_size)
+new_dataset_name = f"{new_dataset_name_prefix}-{subset_size}"
 
 print(small_dataset)
 
@@ -46,4 +51,15 @@ def to_br(sample):
 # translate the dataset to breton
 small_dataset.map(to_br)
 
-small_dataset.save_to_disk(dataset_path='alpaca-goulenn')
+# access the DatasetInfo object
+info = DatasetInfo()
+
+# Modify DatasetInfo fields
+info.description = f"{subset_size} Breton instructions dataset, translated from the original French-Alpaca-dataset-Instruct-110K by Jonathan Pacifico."
+info.homepage = "https://github.com/blackccpie/GweLLM"
+info.license = "MIT License"
+info.version = "1.0.0"
+
+small_dataset.save_to_disk(dataset_path=new_dataset_name)
+
+info.write_to_directory(new_dataset_name, pretty_print=True)

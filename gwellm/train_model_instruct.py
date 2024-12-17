@@ -49,7 +49,7 @@ tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad tok
 ############### PREPARE DATASET ###############
 
 # saved in ~/.cache/huggingface/datasets
-dataset = load_from_disk("goulenn/alpaca-goulenn")
+dataset = load_from_disk("../goulenn/goulenn-alpaca-1000")
 
 print(dataset)
 
@@ -84,7 +84,7 @@ tokenized_dataset = dataset.map(tokenize_function, batched=True)
 tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels']) # TODO : why is that mandatory???? correct also in trani_model.py
 tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.2)
 
-print(tokenized_dataset['train'][0])
+#print(tokenized_dataset['train'][0])
 
 ############### PREPARE MODEL ###############
 

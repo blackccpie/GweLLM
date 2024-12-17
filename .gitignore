@@ -1,7 +1,8 @@
-gwellm*
-
 # Gallek
 gallek/gallek-*
 
 # Goulenn
-goulenn/alpaca-*
+goulenn/goulenn-alpaca-*
+
+# GweLLM
+gwellm/gwellm-*

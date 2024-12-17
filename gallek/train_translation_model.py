@@ -111,6 +111,7 @@ def compute_metrics(eval_preds):
         preds = preds[0]
     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
 
+    # by default -100 is an index that is ignored in the loss function we use (Pytorch's cross entropy)
     labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
