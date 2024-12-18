@@ -30,10 +30,10 @@ class gallek:
     __checkpoint_base = "facebook/m2m100_418M"
     __checkpoint = "gallek-m2m100-b33"
 
-    def __init__(self, chdir: str='./'):
+    def __init__(self, chdir: str='./', max_length: int=400):
         self.__tokenizer = AutoTokenizer.from_pretrained(self.__checkpoint_base)
         self.__model = AutoModelForSeq2SeqLM.from_pretrained(chdir + self.__checkpoint, device_map="auto")
-        self.__translation_pipeline = pipeline("translation", model=self.__model, tokenizer=self.__tokenizer, src_lang='fr', tgt_lang='br', max_length=400)
+        self.__translation_pipeline = pipeline("translation", model=self.__model, tokenizer=self.__tokenizer, src_lang='fr', tgt_lang='br', max_length=max_length)
 
     def translate_fr2br(self, text: str):
         return self.__translation_pipeline(text)[0]['translation_text']

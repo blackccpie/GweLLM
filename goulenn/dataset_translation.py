@@ -39,17 +39,20 @@ new_dataset_name = f"{new_dataset_name_prefix}-{subset_size}"
 print(small_dataset)
 
 # instanciate gallek translator
-gk = gallek(chdir='../gallek/')
+gk = gallek(chdir='../gallek/', max_length=600)
 
 # define the translation functor
 def to_br(sample):
   sample['instruction'] = gk.translate_fr2br(sample['instruction'])
   sample['input'] = gk.translate_fr2br(sample['input'])
   sample['output'] = gk.translate_fr2br(sample['output'])
-  print(sample)
+  #print(sample)
+  return sample
 
 # translate the dataset to breton
-small_dataset.map(to_br)
+small_dataset = small_dataset.map(to_br, batched=False)
+
+#print(small_dataset[0])
 
 # access the DatasetInfo object
 info = DatasetInfo()

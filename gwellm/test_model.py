@@ -28,7 +28,7 @@ from transformers import (
 
 import torch
 
-base_model_id       = 'google/gemma-2-2b'
+base_model_id       = 'google/gemma-2-2b_it'
 adapter_model_id    = 'gwellm'
 
 query = "Demat dit, penaos"
@@ -39,7 +39,7 @@ tokenizer = AutoTokenizer.from_pretrained(base_model_id)
 tokenizer.pad_token = tokenizer.eos_token # Most LLMs don't have a pad token by default
 model = AutoModelForCausalLM.from_pretrained(base_model_id, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
 
- # load adapter model
+# load adapter model
 model.load_adapter(adapter_model_id)
 model.eval()
 model.config.use_cache = True
