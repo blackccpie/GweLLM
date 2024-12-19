@@ -46,16 +46,29 @@ For now:
 * Monodirectionally fr->br fine-tuned
 * Reaches an honorable BLEU score of 33 on a 20% train/test split of the dataset
 
+TODOs:
+- [x] TITI
+- [ ] Add new datasets in training corpus
+- [ ] Train bidirectional version
+
 ### Building the _Goulenn_ Breton Instruct Dataset
 
 For now:
 * Based on the original [jpacifico/French-Alpaca-dataset-Instruct-110K](https://huggingface.co/datasets/jpacifico/French-Alpaca-dataset-Instruct-110K?row=9), thanks to the work of Jonathan Pacifico.
 * Translated to Breton using the _Gallek_ model
 
+TODOs:
+- [x] TITI
+- [ ] Translate the whole 110k
+
 ### Fine-Tuning GweLLM
 
 For now:
 * Based on the [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) base model (seems to already know a bit of Breton)
+
+TODOs:
+- [x] TITI
+- [ ] Hybrid Fine-Tuning
 
 TODO FT Strategy
 [Instruction Pre-Training: Language Models are Supervised Multitask Learners]
