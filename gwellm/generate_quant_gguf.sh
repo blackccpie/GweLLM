@@ -2,7 +2,6 @@
 
 LLAMA_CPP_DIR=${LLAMA_CPP_DIR}
 INPUT_HF_MODEL=gwellm-it-merged
-#METADATA_FILE=llama-3.2-3b-plu-f16.metadata
 OUTPUT_GGUF_MODEL=gwellm-it-f16.gguf
 OUTPUT_TYPE=f16
 
