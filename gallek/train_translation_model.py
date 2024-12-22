@@ -98,12 +98,18 @@ data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=checkpoint_bas
 metric = evaluate.load("sacrebleu")
 
 def postprocess_text(preds, labels):
+    """
+    TODO
+    """
     preds = [pred.strip() for pred in preds]
     labels = [[label.strip()] for label in labels]
 
     return preds, labels
 
 def compute_metrics(eval_preds):
+    """
+    TODO
+    """
     preds, labels = eval_preds
     if isinstance(preds, tuple):
         preds = preds[0]
@@ -135,6 +141,7 @@ training_args = Seq2SeqTrainingArguments(
     per_device_eval_batch_size=16,
     weight_decay=0.01,
     save_total_limit=3,
+    save_steps=500,
     num_train_epochs=1,
     predict_with_generate=True,
     fp16=True, #change to bf16=True for XPU
@@ -151,8 +158,14 @@ trainer = Seq2SeqTrainer(
     compute_metrics=compute_metrics,
 )
 
-trainer.train()
+# start training
+trainer.train()#resume_from_checkpoint = True)
+
+# save model
 trainer.save_model(checkpoint)
+
+# save tokenizer in same directory
+#tokenizer.save_pretrained(checkpoint) # TODO update gallek_translator accordingly if tokenizer is colocated!
 
 #trainer.evaluate()
 

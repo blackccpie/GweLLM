@@ -12,5 +12,5 @@ INPUT_GGUF_MODEL=$OUTPUT_GGUF_MODEL
 OUTPUT_GGUF_MODEL=gwellm-it-Q4_K_M.gguf
 OUTPUT_TYPE=Q4_K_M
 
-# run conversion
+# run quantization
 $LLAMA_CPP_DIR/build/bin/llama-quantize $INPUT_GGUF_MODEL $OUTPUT_GGUF_MODEL $OUTPUT_TYPE

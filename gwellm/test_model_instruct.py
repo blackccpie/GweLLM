@@ -28,11 +28,10 @@ from transformers import (
 
 import torch
 
-base_model_id       = 'google/gemma-2-2b_it'
-adapter_model_id    = 'gwellm'
+base_model_id       = 'google/gemma-2-2b-it'
+adapter_model_id    = 'gwellm-it'
 
-query = "Demat dit, penaos"
-#query = "Le ciel est"
+query = "<start_of_turn>You're a Breton assistant. Answer the following user request: Demat, gouzout a rez komz brezhoneg?<end_of_turn>\n<start_of_turn>model\n"
 
 # load tokenizer  base model
 tokenizer = AutoTokenizer.from_pretrained(base_model_id)

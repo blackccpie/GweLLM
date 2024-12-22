@@ -48,6 +48,7 @@ For now:
 
 TODOs:
 - [x] Add new datasets in training corpus (initial one was *ofis_publik*)
+- [ ] Add some gguf conversion/quantization scripts using llama.cpp, _**spoiler alert : m2m100 seems unsupported**_ :scream:
 - [ ] Reach a high quality 40 to 50 BLEU score
 - [ ] Train bidirectional version
 
