@@ -33,22 +33,28 @@ from transformers import (
 
 import evaluate
 
-from datasets import load_dataset
+from datasets import load_dataset, concatenate_datasets, DatasetDict
 
 import numpy as np
 
+source_lang='fr'
+target_lang='br'
 
-#source_lang='fr'
-#target_lang='br'
-#dataset = load_dataset("Bretagne/wikimedia_br_fr")
+# load dataset #1
+ofis_dataset = load_dataset("Bretagne/ofis_publik_br-fr")
+ofis_dataset = ofis_dataset.rename_column('français', 'fr')
+ofis_dataset = ofis_dataset.rename_column('breton', 'br')
 
-source_lang='français'
-target_lang='breton'
-dataset = load_dataset("Bretagne/ofis_publik_br-fr")
+# load dataset #2
+subtitles_dataset = load_dataset('Bretagne/OpenSubtitles_br_fr')
+
+# concatenate #1 & #2
+dataset = DatasetDict({'train': concatenate_datasets([ofis_dataset['train'],subtitles_dataset['train']])})
 
 print("loaded dataset infos:")
 print(dataset)
 
+dataset = dataset.shuffle()
 dataset = dataset['train'].train_test_split(test_size=0.2)
 
 print(dataset["train"][0])
@@ -63,34 +69,26 @@ prefix = "traduis de français en breton: "
 
 resume = False
 
-# def preprocess_function(samples):
-#     inputs = [prefix + sample[source_lang] for sample in samples]
-#     targets = [sample[target_lang] for sample in samples]
-#     model_inputs = tokenizer(inputs, text_target=targets, max_length=128, truncation=True)
-#     return model_inputs
-
 def preprocess_function(sample):
-
-    # TODO
-    if not sample[source_lang] or not sample[target_lang]:
-        print("invalid sample!")
-        return {"input_ids": [], 'attention_mask': [], 'labels': []}
-    
-    #print(sample[source_lang])
-    #print(sample[target_lang])
-
+    """
+    Tokenize sample
+    """
     input = prefix + sample[source_lang]
     target = sample[target_lang]
     model_input = tokenizer(input, text_target=target, max_length=128, truncation=True)
     return model_input
 
-tokenized_dataset = dataset.map(preprocess_function, batched=False)
+def preprocess_function_batch(samples):
+    """
+    Tokenize samples (batch version)
+    """
+    inputs = [prefix + sample for sample in samples[source_lang]]
+    targets = [sample for sample in samples[target_lang]]
+    model_inputs = tokenizer(inputs, text_target=targets, max_length=128, truncation=True)
+    return model_inputs
 
-# filter out invalid samples
-old_len = len(tokenized_dataset)
-tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) > 0)
-new_len = len(tokenized_dataset)
-print(f"removed {old_len-new_len} invalid samples from input dataset")
+#tokenized_dataset = dataset.map(preprocess_function, batched=False)
+tokenized_dataset = dataset.map(preprocess_function_batch, batched=True, batch_size=16)
 
 #print(tokenized_dataset["train"][0])
 #print(tokenized_dataset["test"][0])

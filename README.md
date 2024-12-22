@@ -42,14 +42,16 @@ So this project has 3 by-products:
 
 For now:
 * Based on the [facebook/m2m100_418M](https://huggingface.co/facebook/m2m100_418M) base model
-* Fine-tuned on the [Bretagne/ofis_publik_br-fr](https://huggingface.co/datasets/Bretagne/ofis_publik_br-fr) dataset
+* Initially fine-tuned on the [Bretagne/ofis_publik_br-fr](https://huggingface.co/datasets/Bretagne/ofis_publik_br-fr) dataset
 * Monodirectionally fr->br fine-tuned
 * Reaches an honorable BLEU score of 33 on a 20% train/test split of the dataset
 
 TODOs:
-- [x] TITI
-- [ ] Add new datasets in training corpus
+- [x] Add new datasets in training corpus (initial one was *ofis_publik*)
+- [ ] Reach a high quality 40 to 50 BLEU score
 - [ ] Train bidirectional version
+
+TODO scripts
 
 ### Building the _Goulenn_ Breton Instruct Dataset
 
@@ -60,6 +62,8 @@ For now:
 TODOs:
 - [x] TITI
 - [ ] Translate the whole 110k
+
+TODO scripts
 
 ### Fine-Tuning GweLLM
 
@@ -72,6 +76,12 @@ TODOs:
 
 TODO FT Strategy
 [Instruction Pre-Training: Language Models are Supervised Multitask Learners]
+
+TODO scripts
+
+### Using GweLLM
+
+#### Import in GPT4All
 
 TODO
 
