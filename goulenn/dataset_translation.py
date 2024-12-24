@@ -27,30 +27,39 @@ from datasets import load_dataset, DatasetInfo
 
 new_dataset_name_prefix = 'goulenn-alpaca'
 
+batch_size = 16
+
 # saved in ~/.cache/huggingface/datasets
 dataset = load_dataset( path="jpacifico/French-Alpaca-dataset-Instruct-110K",
                         split="train")
 
 # subsample dataset
-subset_size = 1
+subset_size = 1000
 small_dataset = dataset.take(subset_size)
 new_dataset_name = f"{new_dataset_name_prefix}-{subset_size}"
 
 print(small_dataset)
 
 # instanciate gallek translator
-gk = gallek(chdir='../gallek/', max_length=600)
+gk = gallek(chdir='../gallek/', max_length=600, batch_size=batch_size)
 
-# define the translation functor
-def to_br(sample):
-  sample['instruction'] = gk.translate_fr2br(sample['instruction'])
-  sample['input'] = gk.translate_fr2br(sample['input'])
-  sample['output'] = gk.translate_fr2br(sample['output'])
-  #print(sample)
-  return sample
+def to_br_batch(samples):
+    """
+    Translates all fields in batches into Breton
+    """
+
+    instructions = gk.translate_fr2br_batch(samples['instruction'])
+    inputs = gk.translate_fr2br_batch(samples['input'])
+    outputs = gk.translate_fr2br_batch(samples['output'])
+
+    samples['instruction'] = [t['translation_text'] for t in instructions]
+    samples['input'] = [t['translation_text'] for t in inputs]
+    samples['output'] = [t['translation_text'] for t in outputs]
+ 
+    return samples
 
 # translate the dataset to breton
-small_dataset = small_dataset.map(to_br, batched=False)
+small_dataset = small_dataset.map(to_br_batch, batched=True, batch_size=batch_size, writer_batch_size=100)
 
 #print(small_dataset[0])
 

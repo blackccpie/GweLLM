@@ -22,18 +22,27 @@
 
 from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
+import torch
+
 class gallek:
     """
     French to Breton translator based on fine-tuned M2M100 base model
     """
 
     __checkpoint_base = "facebook/m2m100_418M"
-    __checkpoint = "gallek-m2m100-b33"
+    __checkpoint = "gallek-m2m100-b40"
 
-    def __init__(self, chdir: str='./', max_length: int=400):
+    def __init__(self, chdir: str='./', max_length: int=400, batch_size: int=1):
         self.__tokenizer = AutoTokenizer.from_pretrained(self.__checkpoint_base)
         self.__model = AutoModelForSeq2SeqLM.from_pretrained(chdir + self.__checkpoint, device_map="auto")
-        self.__translation_pipeline = pipeline("translation", model=self.__model, tokenizer=self.__tokenizer, src_lang='fr', tgt_lang='br', max_length=max_length)
+        self.__model.eval()
+        self.__model.config.use_cache = True
+        self.__translation_pipeline = pipeline("translation", model=self.__model, tokenizer=self.__tokenizer, src_lang='fr', tgt_lang='br', max_length=max_length, batch_size=batch_size)
+
+    def translate_fr2br_batch(self, samples: str):
+        with torch.no_grad():
+            return self.__translation_pipeline(samples)
 
     def translate_fr2br(self, text: str):
-        return self.__translation_pipeline(text)[0]['translation_text']
+        with torch.no_grad():
+            return self.__translation_pipeline(text)[0]['translation_text']

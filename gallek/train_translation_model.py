@@ -174,5 +174,5 @@ text = "traduis de français en breton: j'apprends le breton à l'école."
 # Change `xx` to the language of the input and `yy` to the language of the desired output.
 # Examples: "en" for English, "fr" for French, "de" for German, "es" for Spanish, "zh" for Chinese, etc; translation_en_to_fr translates English to French
 # You can view all the lists of languages here - https://huggingface.co/languages
-translator = pipeline("translation_fr_to_br", model="my_awesome_breton_model", device="cuda")
+translator = pipeline("translation_fr_to_br", model=checkpoint, device="cuda")
 print(translator(text, max_length=256))
