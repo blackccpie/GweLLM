@@ -37,7 +37,7 @@ import math
 import torch
 
 model_id        = 'google/gemma-2-2b-it'
-output_model_id = 'gwellm-it'
+output_model_id = 'gwellm-gemma2-2b-it'
 
 resume = False
 
@@ -62,10 +62,10 @@ def generate_prompt(sample):
     
     # samples with additional context into
     if sample['input']:
-        text = f"""<start_of_turn>user {prefix_text} {sample["instruction"]} here are the inputs {sample["input"]} <end_of_turn>\n<start_of_turn>model{sample["output"]} <end_of_turn>"""
+        text = f"""<start_of_turn>user {prefix_text} {sample["instruction"]} here are the inputs {sample["input"]} <end_of_turn>\n<start_of_turn>model {sample["output"]} <end_of_turn>"""
     # without
     else:
-        text = f"""<start_of_turn>user {prefix_text} {sample["instruction"]} <end_of_turn>\n<start_of_turn>model{sample["output"]} <end_of_turn>"""
+        text = f"""<start_of_turn>user {prefix_text} {sample["instruction"]} <end_of_turn>\n<start_of_turn>model {sample["output"]} <end_of_turn>"""
     return text
 
 # add the "prompt" column in the dataset

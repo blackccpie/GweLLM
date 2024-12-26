@@ -29,11 +29,10 @@ class gallek:
     French to Breton translator based on fine-tuned M2M100 base model
     """
 
-    __checkpoint_base = "facebook/m2m100_418M"
     __checkpoint = "gallek-m2m100-b40"
 
     def __init__(self, chdir: str='./', max_length: int=400, batch_size: int=1):
-        self.__tokenizer = AutoTokenizer.from_pretrained(self.__checkpoint_base)
+        self.__tokenizer = AutoTokenizer.from_pretrained(self.__checkpoint)
         self.__model = AutoModelForSeq2SeqLM.from_pretrained(chdir + self.__checkpoint, device_map="auto")
         self.__model.eval()
         self.__model.config.use_cache = True

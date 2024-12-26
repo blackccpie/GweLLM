@@ -24,11 +24,10 @@ import gradio as gr
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 import torch
 
-#modelcard = "facebook/m2m100_418M"
-modelcard = "gallek-m2m100-b33"
+modelcard = "gallek-m2m100-b40"
 
 model = AutoModelForSeq2SeqLM.from_pretrained(modelcard)
-tokenizer = AutoTokenizer.from_pretrained("facebook/m2m100_418M")
+tokenizer = AutoTokenizer.from_pretrained(modelcard)
 
 def translate(text):
     """
