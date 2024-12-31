@@ -22,7 +22,6 @@
 
 import gradio as gr
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
-import torch
 
 modelcard = "gallek-m2m100-b40"
 
@@ -34,17 +33,19 @@ def translate(text):
     Translate the text from source lang to target lang
     """
     translation_pipeline = pipeline("translation", model=model, tokenizer=tokenizer, src_lang='fr', tgt_lang='br', max_length=400, device="cuda")
-    result = translation_pipeline(text)
+    result = translation_pipeline("traduis de français en breton: " + text)
     return result[0]['translation_text']
 
 demo = gr.Interface(
     fn=translate,
     inputs=[
-        gr.components.Textbox(label="Text"),
+        gr.components.Textbox(label="French"),
     ],
-    outputs=["text"],
+    outputs=[
+        gr.components.Textbox(label="Breton")
+    ],
     cache_examples=False,
-    title="Translation Demo",
+    title="Gallek French -> Breton Translation Demo",
     allow_flagging='never'
 )
 

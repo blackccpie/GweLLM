@@ -34,7 +34,7 @@ dataset = load_dataset( path="jpacifico/French-Alpaca-dataset-Instruct-110K",
                         split="train")
 
 # subsample dataset
-subset_size = 1000
+subset_size = 50000
 small_dataset = dataset.take(subset_size)
 new_dataset_name = f"{new_dataset_name_prefix}-{subset_size}"
 
