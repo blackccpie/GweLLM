@@ -10,6 +10,10 @@ Indice: "Gwell" = "Mieux" en Breton
 
 Expériences sur l'adaptation d'un LLM conversationnel pré-entraîné à une nouvelle langue, en l'occurrence le Breton, vivant pour ma part dans la belle Bretagne ensoleillée :sunglasses::wink:
 
+La motivation initiale derrière GweLLM est de construire des modèles de langage légers et open source pour le Breton, permettant :
+* Un déploiement et une exécution en local (même sur CPU uniquement)
+* Une utilisation sans contraintes (pas de limitations d'API externes)
+
 Ceci est un travail en cours...
 
 ### Approche

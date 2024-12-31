@@ -10,6 +10,10 @@ Hint: "Gwell" = "Better" in Breton
 
 Experiments on adapting a pretrained Conversational LLM to a new language, in this case Breton as I live in sunny Brittany :sunglasses::wink:
 
+GweLLM initial motivation was to build open source lightweight langage models for Breton, allowing:
+* Local deployment and execution (even on CPU only)
+* Hassle-free use (no external API limitations)
+
 This is a Work in Progress...
 
 ### Approach
@@ -27,7 +31,7 @@ Here is a shortlist of the challenges I first identified:
   * LLMs?
     * Google's [T5](https://huggingface.co/google-t5/t5-small)
       * Mutlilingual, but no Breton in training corpus :-1:
-    * Meta's [M2M100](https://huggingface.co/facebook/m2m100_418M)
+    * Meta's [M2M100_418M](https://huggingface.co/facebook/m2m100_418M)
       * Multilingual, Breton included in training corpus :+1:
       * Raw Breton performance is not good, will need fine-tuning!
 * Finding a Breton instruction dataset:
@@ -67,6 +71,7 @@ For now:
 
 What's inside the `goulenn` subdirectory:
 * `dataset_translation.py` : used to batch translate the original _French Alpaca_ instructions dataset into Breton
+* `convert_dataset.py` : used to convert the `arrow` formated translated dataset to `json` and `parquet`
 
 TODOs:
 - [x] Translate 50k samples
@@ -78,7 +83,7 @@ For now:
 * Based on the [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) base model (seems to already know a bit of Breton)
 
 TODOs:
-- [x] TITI
+- [ ] Release an initial beta version
 - [ ] Distribute as [LLamafile](https://github.com/Mozilla-Ocho/llamafile)
 - [ ] Hybrid Fine-Tuning
 
