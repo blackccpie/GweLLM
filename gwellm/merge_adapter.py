@@ -28,8 +28,8 @@ from transformers import (
 from peft import PeftModel
 
 base_id = 'google/gemma-2-2b-it'
-adapter_id = 'gwellm-it'
-output_id = 'gwellm-it-merged'
+adapter_id = 'gwellm-gemma2-2b-it'
+output_id = 'gwellm-gemma2-2b-it-merged'
 
 base_model = AutoModelForCausalLM.from_pretrained(base_id)
 model = PeftModel.from_pretrained(base_model, adapter_id)

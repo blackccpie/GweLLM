@@ -147,7 +147,8 @@ training_args = TrainingArguments(
     warmup_ratio=0.5,
     learning_rate=5e-5,
     num_train_epochs=1, # how many times will the same data be given
-    per_device_train_batch_size=1, # how many data blocks to give the gpu per training step
+    per_device_train_batch_size=16, # how many data blocks to give the gpu per training step
+    per_device_eval_batch_size=16, # how many data blocks to give the gpu per testing step
     remove_unused_columns=False
 )
 
