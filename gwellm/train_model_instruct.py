@@ -44,7 +44,7 @@ resume = False
 ############### PREPARE TOKENIZER
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
-tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad token by default
+tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad token by default # TODO confirm & clarify?
 
 ############### PREPARE DATASET ###############
 
@@ -55,17 +55,22 @@ print(dataset)
 
 def generate_prompt(sample):
     
-    prefix_text = """Below is an instruction that describes a task.
-    Write a response that appropriately completes the request.
+    prefix_text_input = """Amañ dindan e kavoc'h un hentenn a zeskriv un trevell a-gevret gant ur meneg hag a zegas un endro ouzhpenn.
+    Skrivit ur respont hag a respont mat d’ar goulenn.
     
     """
     
+    prefix_text = """Amañ dindan e kavot un deskadurezh e brezhoneg a zeskriv un trevell.
+    Skrivit ur respont hag a respont mat d’ar goulenn.
+    
+    """
+
     # samples with additional context into
     if sample['input']:
-        text = f"""<start_of_turn>user {prefix_text} {sample["instruction"]} here are the inputs {sample["input"]} <end_of_turn>\n<start_of_turn>model {sample["output"]} <end_of_turn>"""
+        text = f"""<start_of_turn>user\n{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}<end_of_turn>\n<start_of_turn>model\n{sample["output"]}<end_of_turn>"""
     # without
     else:
-        text = f"""<start_of_turn>user {prefix_text} {sample["instruction"]} <end_of_turn>\n<start_of_turn>model {sample["output"]} <end_of_turn>"""
+        text = f"""<start_of_turn>user\n{prefix_text}{sample["instruction"]}<end_of_turn>\n<start_of_turn>model\n{sample["output"]}<end_of_turn>"""
     return text
 
 # add the "prompt" column in the dataset
@@ -81,7 +86,7 @@ def tokenize_function(samples):
     return tokenized
 
 tokenized_dataset = dataset.map(tokenize_function, batched=True)
-tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels']) # TODO : why is that mandatory???? correct also in trani_model.py
+tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels']) # TODO : why is that mandatory???? correct also in sandboxed train_model.py
 tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.2)
 
 #print(tokenized_dataset['train'][0])
