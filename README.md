@@ -16,7 +16,7 @@ GweLLM initial motivation was to build open source lightweight langage models fo
 
 This is a Work in Progress...
 
-### Approach
+## Approach
 
 Let's breakdown the problem:
 * The global idea is to fine-tune an existing multi-lingual LLM, ideally one that saw some Breton during its tokenizer/model pre-training.
@@ -44,7 +44,7 @@ So this project has 3 "by-products":
 
 All code is mainly based on HuggingFace's [Transformers](https://huggingface.co/docs/transformers/index) library.
 
-### Building the _Gallek_ fr->br translation model
+## Building the _Gallek_ fr->br translation model
 
 For now:
 * Based on the [facebook/m2m100_418M](https://huggingface.co/facebook/m2m100_418M) base model
@@ -63,7 +63,7 @@ TODOs:
 - [ ] Reach a high quality 50 BLEU score
 - [ ] Train bidirectional version
 
-### Building the _Goulenn_ Breton Instruct Dataset
+## Building the _Goulenn_ Breton Instruct Dataset
 
 For now:
 * Based on the original [jpacifico/French-Alpaca-dataset-Instruct-110K](https://huggingface.co/datasets/jpacifico/French-Alpaca-dataset-Instruct-110K?row=9), thanks to the work of Jonathan Pacifico.
@@ -77,10 +77,11 @@ TODOs:
 - [x] Translate 50k samples
 - [ ] Translate the whole 110k
 
-### Fine-Tuning GweLLM
+## Fine-Tuning GweLLM
 
 For now:
 * Based on the [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) base model (seems to already know a bit of Breton)
+* Trained on _Gallek_ 50k
 
 TODOs:
 - [ ] Release an initial beta version
@@ -92,22 +93,31 @@ TODO FT Strategy
 
 TODO scripts
 
-### Using GweLLM
+## Using GweLLM
 
-#### Import in GPT4All
+### Import in GPT4All
 
 TODO
 
-### Additional Resources
+## Additional Resources
 
-#### Finding Breton Datasets
+### Finding Breton Datasets
 
 Here are the few resources I found after initial googling:
 * [Texts corpus at the French public office for Breton language](https://niverel.brezhoneg.bzh/fr/corpus/text)
 * [The "Bretagne" organization on Hugging Face](https://huggingface.co/Bretagne) :thumbsup:
 
-#### Misc
+### Misc
 
 * [Free online translation tool](https://niverel.brezhoneg.bzh/fr/troer/) :thumbsup:
 * [Reddit thread about Breton LLM](https://www.reddit.com/r/Bretagne/comments/1d7389i/modèle_génératif_llm_langue_bretonne)
 
+## Troubleshooting
+
+### Installing `llama-cpp-python`
+
+Installing `llama-cpp-python` can be a bit tricky, as I really struggled to install it on WSL2 (Ubuntu 22.04):
+* The classic `pip install llama-cpp-python` systematically failed as described in [this issue](https://github.com/abetlen/llama-cpp-python/issues/1876)
+* The documented way of installing a prebuilt cpu-only wheel `pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu` also failed
+* I finally downloaded the [`llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl`](https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.2/llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl) package from the wheel repository and installed it manually with `pip install pip install llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl`
+* As I encountered issues related to `libc.musl` dependency I had to use [this workaround](https://github.com/abetlen/llama-cpp-python/issues/1628#issuecomment-2254571128)

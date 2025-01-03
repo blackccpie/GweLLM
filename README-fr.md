@@ -16,7 +16,7 @@ La motivation initiale derrière GweLLM est de construire des modèles de langag
 
 Ceci est un travail en cours...
 
-### Approche
+## Approche
 
 Décomposons le problème :
 * L'idée générale est d'affiner/fine-tuner un LLM multilingue existant, idéalement un LLM qui a déjà vu un peu de breton pendant le pré-entraînement de son tokenizer/modèle.
