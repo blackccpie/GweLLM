@@ -32,7 +32,7 @@ class gallek:
     __checkpoint = "gallek-m2m100-b40"
 
     def __init__(self, chdir: str='./', max_length: int=400, batch_size: int=1):
-        self.__tokenizer = AutoTokenizer.from_pretrained(self.__checkpoint)
+        self.__tokenizer = AutoTokenizer.from_pretrained(chdir + self.__checkpoint)
         self.__model = AutoModelForSeq2SeqLM.from_pretrained(chdir + self.__checkpoint, device_map="auto")
         self.__model.eval()
         self.__model.config.use_cache = True

@@ -34,10 +34,22 @@ dataset = load_dataset( path="jpacifico/French-Alpaca-dataset-Instruct-110K",
                         split="train")
 
 # subsample dataset
-subset_size = 50000
-small_dataset = dataset.take(subset_size)
-new_dataset_name = f"{new_dataset_name_prefix}-{subset_size}"
+new_dataset_name = ""
 
+# -- skip items --
+skip_size = 0
+small_dataset = dataset.skip(skip_size)
+
+# -- subset --
+subset_size = 50000 # if 0, takes all samples
+if subset_size == 0:
+    subset_size = small_dataset.num_rows
+else:
+    small_dataset = dataset.take(subset_size)
+
+new_dataset_name = f"{new_dataset_name_prefix}-{subset_size}-skip{skip_size}"
+
+print(f"dataset name: {new_dataset_name}")
 print(small_dataset)
 
 # instanciate gallek translator
