@@ -72,6 +72,7 @@ For now:
 What's inside the `goulenn` subdirectory:
 * `dataset_translation.py` : used to batch translate the original _French Alpaca_ instructions dataset into Breton
 * `convert_dataset.py` : used to convert the `arrow` formated translated dataset to `json` and `parquet`
+* `concatenate_datasets.py` : used to concatenate two `arrow` datasets, in case translation has been fragmented
 
 TODOs:
 - [x] Translate 50k samples

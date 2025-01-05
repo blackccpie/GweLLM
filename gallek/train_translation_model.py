@@ -37,8 +37,19 @@ from datasets import load_dataset, concatenate_datasets, DatasetDict
 
 import numpy as np
 
+resume = False
+revert = False # set tu True for backward br->fr translation training
+
 source_lang='fr'
 target_lang='br'
+prefix = "traduis de français en breton: "
+eval_query = "traduis de français en breton: j'apprends le breton à l'école."
+
+if revert:
+    source_lang='br'
+    target_lang='fr'
+    prefix = "treiñ eus ar galleg d'ar brezhoneg: "
+    eval_query = "treiñ eus ar galleg d'ar brezhoneg : deskiñ a ran brezhoneg er skol."
 
 # load dataset #1
 ofis_dataset = load_dataset("Bretagne/ofis_publik_br-fr")
@@ -64,10 +75,6 @@ checkpoint = "gallek-m2m100"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint_base)
 tokenizer.src_lang = "fr"
 tokenizer.tgt_lang = "br"
-
-prefix = "traduis de français en breton: "
-
-resume = False
 
 def preprocess_function(sample):
     """
@@ -99,7 +106,7 @@ metric = evaluate.load("sacrebleu")
 
 def postprocess_text(preds, labels):
     """
-    TODO
+    Strips predictions
     """
     preds = [pred.strip() for pred in preds]
     labels = [[label.strip()] for label in labels]
@@ -108,7 +115,7 @@ def postprocess_text(preds, labels):
 
 def compute_metrics(eval_preds):
     """
-    TODO
+    Computes BLEU metric on given predictions
     """
     preds, labels = eval_preds
     if isinstance(preds, tuple):
@@ -164,15 +171,10 @@ trainer.train()#resume_from_checkpoint = True)
 # save model
 trainer.save_model(checkpoint)
 
-# save tokenizer in same directory
-#tokenizer.save_pretrained(checkpoint) # TODO update gallek_translator accordingly if tokenizer is colocated!
-
 #trainer.evaluate()
-
-text = "traduis de français en breton: j'apprends le breton à l'école."
 
 # Change `xx` to the language of the input and `yy` to the language of the desired output.
 # Examples: "en" for English, "fr" for French, "de" for German, "es" for Spanish, "zh" for Chinese, etc; translation_en_to_fr translates English to French
 # You can view all the lists of languages here - https://huggingface.co/languages
 translator = pipeline("translation_fr_to_br", model=checkpoint, device="cuda")
-print(translator(text, max_length=256))
+print(translator(eval_query, max_length=256))
