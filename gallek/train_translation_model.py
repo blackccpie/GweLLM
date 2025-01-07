@@ -43,13 +43,15 @@ revert = False # set tu True for backward br->fr translation training
 source_lang='fr'
 target_lang='br'
 prefix = "traduis de français en breton: "
-eval_query = "traduis de français en breton: j'apprends le breton à l'école."
+eval_query = prefix + "j'apprends le breton à l'école."
+eval_pipeline = "translation_fr_to_br"
 
 if revert:
     source_lang='br'
     target_lang='fr'
-    prefix = "treiñ eus ar galleg d'ar brezhoneg: "
-    eval_query = "treiñ eus ar galleg d'ar brezhoneg : deskiñ a ran brezhoneg er skol."
+    prefix = "treiñ eus ar brezhoneg d'ar galleg: "
+    eval_query = prefix + "deskiñ a ran brezhoneg er skol."
+    eval_pipeline = "translation_br_to_fr"
 
 # load dataset #1
 ofis_dataset = load_dataset("Bretagne/ofis_publik_br-fr")
@@ -73,8 +75,8 @@ print(dataset["train"][0])
 checkpoint_base="facebook/m2m100_418M"
 checkpoint = "gallek-m2m100"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint_base)
-tokenizer.src_lang = "fr"
-tokenizer.tgt_lang = "br"
+tokenizer.src_lang = source_lang
+tokenizer.tgt_lang = target_lang
 
 def preprocess_function(sample):
     """
@@ -176,5 +178,5 @@ trainer.save_model(checkpoint)
 # Change `xx` to the language of the input and `yy` to the language of the desired output.
 # Examples: "en" for English, "fr" for French, "de" for German, "es" for Spanish, "zh" for Chinese, etc; translation_en_to_fr translates English to French
 # You can view all the lists of languages here - https://huggingface.co/languages
-translator = pipeline("translation_fr_to_br", model=checkpoint, device="cuda")
+translator = pipeline(eval_pipeline, model=checkpoint, device="cuda")
 print(translator(eval_query, max_length=256))
