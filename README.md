@@ -14,6 +14,8 @@ GweLLM initial motivation was to build open source lightweight langage models fo
 * Local deployment and execution (even on CPU only)
 * Hassle-free use (no external API limitations)
 
+Output models and datasets will be made available on my [HuggingFace repo 🤗](https://huggingface.co/amurienne).
+
 This is a Work in Progress...
 
 ## Approach
@@ -75,8 +77,8 @@ What's inside the `goulenn` subdirectory:
 * `concatenate_datasets.py` : used to concatenate two `arrow` datasets, in case translation has been fragmented
 
 TODOs:
-- [x] Translate 50k samples
-- [ ] Translate the whole 110k
+- [x] Translate 50k samples (available on HF🤗 [here](https://huggingface.co/datasets/amurienne/Goulenn-Alpaca-Instruct-50k))
+- [x] Translate the whole 110k (available on HF🤗 [here](https://huggingface.co/datasets/amurienne/Goulenn-Alpaca-Instruct-110k))
 
 ## Fine-Tuning GweLLM
 
@@ -107,6 +109,10 @@ TODO
 Here are the few resources I found after initial googling:
 * [Texts corpus at the French public office for Breton language](https://niverel.brezhoneg.bzh/fr/corpus/text)
 * [The "Bretagne" organization on Hugging Face](https://huggingface.co/Bretagne) :thumbsup:
+
+### Publications
+
+* Soon after releasing the first _Gallek_ translator model, I stumbled upon this french paper describing the same m2m100 Breton finetuning approach: [_Loïc Grobol, Mélanie Jouitteau. ARBRES Kenstur: a Breton-French Parallel Corpus Rooted in Field Linguistics. LREC-COLING 2024 - The 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation, ELRA Language Resources Association Language Resources Association; International Committee on Computational Linguistics, May 2024, Torino, Italy. ffhal-04551941_](https://hal.science/hal-04551941/document) 
 
 ### Misc
 

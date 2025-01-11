@@ -36,8 +36,17 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 import math
 import torch
 
+#model_id        = 'meta-llama/Llama-3.2-1B-Instruct'
+#output_model_id = 'gwellm-llama3.2-1b-it'
+#start_pattern   = '<|start_header_id|>user<|end_header_id|>:\n'
+#next_pattern    = '<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n'
+#end_pattern     = '<|eot_id|>'
+
 model_id        = 'google/gemma-2-2b-it'
 output_model_id = 'gwellm-gemma2-2b-it'
+start_pattern   = '<start_of_turn>user\n'
+next_pattern    = '<end_of_turn>\n<start_of_turn>model\n'
+end_pattern     = '<end_of_turn>'
 
 resume = False
 
@@ -49,7 +58,7 @@ tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad tok
 ############### PREPARE DATASET ###############
 
 # saved in ~/.cache/huggingface/datasets
-dataset = load_from_disk("../goulenn/goulenn-alpaca-1000")
+dataset = load_from_disk("../goulenn/goulenn-alpaca-110000")
 
 print(dataset)
 
@@ -67,10 +76,10 @@ def generate_prompt(sample):
 
     # samples with additional context into
     if sample['input']:
-        text = f"""<start_of_turn>user\n{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}<end_of_turn>\n<start_of_turn>model\n{sample["output"]}<end_of_turn>"""
+        text = f"""{start_pattern}{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}{next_pattern}{sample["output"]}{end_pattern}"""
     # without
     else:
-        text = f"""<start_of_turn>user\n{prefix_text}{sample["instruction"]}<end_of_turn>\n<start_of_turn>model\n{sample["output"]}<end_of_turn>"""
+        text = f"""{start_pattern}{prefix_text}{sample["instruction"]}{next_pattern}{sample["output"]}{end_pattern}"""
     return text
 
 # add the "prompt" column in the dataset

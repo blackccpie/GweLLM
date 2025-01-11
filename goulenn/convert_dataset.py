@@ -22,7 +22,7 @@
 
 from datasets import load_from_disk
 
-volumetry = '50k'
+volumetry = '110k'
 
 ds = load_from_disk(f"goulenn-alpaca-{volumetry}")        
 ds.to_json(f"goulenn_instructions_{volumetry}.json")
