@@ -26,6 +26,7 @@ from transformers import (
     AutoTokenizer, 
     AutoModelForSeq2SeqLM,
     DataCollatorForSeq2Seq,
+    GenerationConfig,
     Seq2SeqTrainingArguments, 
     Seq2SeqTrainer,
     pipeline
@@ -140,6 +141,11 @@ def compute_metrics(eval_preds):
 
 model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint if resume else checkpoint_base)
 
+#generation_config = GenerationConfig(
+#    decoder_start_token_id=model.config.decoder_start_token_id,
+#    force_bos_token_id=tokenizer.get_lang_id(target_lang)
+#)
+
 training_args = Seq2SeqTrainingArguments(
     output_dir=checkpoint,
     overwrite_output_dir=True,
@@ -155,6 +161,7 @@ training_args = Seq2SeqTrainingArguments(
     predict_with_generate=True,
     fp16=True, #change to bf16=True for XPU
     push_to_hub=False,
+    #generation_config=generation_config
 )
 
 trainer = Seq2SeqTrainer(

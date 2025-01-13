@@ -38,7 +38,7 @@ import torch
 
 #model_id        = 'meta-llama/Llama-3.2-1B-Instruct'
 #output_model_id = 'gwellm-llama3.2-1b-it'
-#start_pattern   = '<|start_header_id|>user<|end_header_id|>:\n'
+#start_pattern   = '<|start_header_id|>user<|end_header_id|>\n'
 #next_pattern    = '<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n'
 #end_pattern     = '<|eot_id|>'
 
