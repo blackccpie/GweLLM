@@ -32,14 +32,27 @@ from transformers import (
     pipeline
 )
 
-import evaluate
-
 from datasets import load_dataset, concatenate_datasets, DatasetDict
+
+import evaluate
 
 import numpy as np
 
+import sys
+
 resume = False
-revert = False # set tu True for backward br->fr translation training
+revert = False # set to True for backward br->fr translation training
+
+# quick hack to manage program arguments 
+if len(sys.argv) == 3:
+    if sys.argv[1] == 'resume':
+        resume = True
+    elif sys.argv[1] == 'nresume':
+        resume = False
+    if sys.argv[2] == 'revert':
+        revert = True
+    elif sys.argv[2] == 'nrevert':
+        revert = False
 
 source_lang='fr'
 target_lang='br'
