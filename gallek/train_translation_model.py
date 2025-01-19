@@ -75,8 +75,11 @@ ofis_dataset = ofis_dataset.rename_column('breton', 'br')
 # load dataset #2
 subtitles_dataset = load_dataset('Bretagne/OpenSubtitles_br_fr')
 
-# concatenate #1 & #2
-dataset = DatasetDict({'train': concatenate_datasets([ofis_dataset['train'],subtitles_dataset['train']])})
+# load dataset #3
+autogramm_dataset = load_dataset('Bretagne/Autogramm_Breton_translation')
+
+# concatenate #1 & #2 & #3
+dataset = DatasetDict({'train': concatenate_datasets([ofis_dataset['train'],subtitles_dataset['train'],autogramm_dataset['train']])})
 
 print("loaded dataset infos:")
 print(dataset)
