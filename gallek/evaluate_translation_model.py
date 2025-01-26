@@ -29,12 +29,18 @@ import torch
 from tqdm import tqdm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"setting device to: {device}")
+
+source_lang='fr'
+target_lang='br'
 
 ### step 1: load model and tokenizer
 
 model_name = "gallek-m2m100-b40"
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name, device_map=device)
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+tokenizer.src_lang = source_lang
+tokenizer.tgt_lang = target_lang
 
 ### step 2: load dataset
 
@@ -46,8 +52,11 @@ ofis_dataset = ofis_dataset.rename_column('breton', 'br')
 # load dataset #2
 subtitles_dataset = load_dataset('Bretagne/OpenSubtitles_br_fr')
 
-# concatenate #1 & #2
-dataset = DatasetDict({'train': concatenate_datasets([ofis_dataset['train'],subtitles_dataset['train']])})
+# load dataset #3
+autogramm_dataset = load_dataset('Bretagne/Autogramm_Breton_translation')
+
+# concatenate #1 & #2 & #3
+dataset = DatasetDict({'train': concatenate_datasets([ofis_dataset['train'],subtitles_dataset['train'],autogramm_dataset['train']])})
 
 print("loaded dataset infos:")
 print(dataset)
@@ -59,8 +68,7 @@ dataset = dataset['train'].train_test_split(test_size=0.001)
 references = []  # list to hold reference translations
 predictions = []  # list to hold model predictions
 
-source_lang='fr'
-target_lang='br'
+print(f"test size: {len(dataset['test'])}")
 
 for sample in tqdm(dataset['test']):
 
@@ -71,7 +79,7 @@ for sample in tqdm(dataset['test']):
     inputs = tokenizer(source_text, return_tensors="pt", truncation=True, padding=True).to(device)
     
     # generate translation
-    outputs = model.generate(**inputs, max_length=256)
+    outputs = model.generate(**inputs, max_length=256) #, force_bos_token_id=tokenizer.get_lang_id(target_lang))
     translated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
     
     # collect reference and prediction
