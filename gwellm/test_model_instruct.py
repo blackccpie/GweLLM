@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import model_library
+
 from transformers import (
     AutoTokenizer, 
     AutoModelForCausalLM,
@@ -28,18 +30,18 @@ from transformers import (
 
 import torch
 
-base_model_id       = 'google/gemma-2-2b-it'
-adapter_model_id    = 'gwellm-gemma2-2b-it'
+# load model card
+modelcard = model_library.get_model('gemma2-2b')
 
 query = "<start_of_turn>You're a Breton assistant. Answer the following user request: Demat, gouzout a rez komz brezhoneg?<end_of_turn>\n<start_of_turn>model\n"
 
 # load tokenizer  base model
-tokenizer = AutoTokenizer.from_pretrained(base_model_id)
+tokenizer = AutoTokenizer.from_pretrained(modelcard.base_model_id)
 tokenizer.pad_token = tokenizer.eos_token # Most LLMs don't have a pad token by default
-model = AutoModelForCausalLM.from_pretrained(base_model_id, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
+model = AutoModelForCausalLM.from_pretrained(modelcard.base_model_id, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
 
 # load adapter model
-model.load_adapter(adapter_model_id)
+model.load_adapter(modelcard.adapter_model_id)
 model.eval()
 model.config.use_cache = True
 

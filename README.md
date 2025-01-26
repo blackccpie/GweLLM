@@ -50,14 +50,14 @@ All code is mainly based on HuggingFace's [Transformers](https://huggingface.co/
 
 For now:
 * Based on the [facebook/m2m100_418M](https://huggingface.co/facebook/m2m100_418M) base model
-* Fine-tuned on the [Bretagne/ofis_publik_br-fr](https://huggingface.co/datasets/Bretagne/ofis_publik_br-fr) & [Bretagne/OpenSubtitles_br_fr](https://huggingface.co/datasets/Bretagne/OpenSubtitles_br_fr) datasets
+* Fine-tuned on the [Bretagne/ofis_publik_br-fr](https://huggingface.co/datasets/Bretagne/ofis_publik_br-fr), [Bretagne/OpenSubtitles_br_fr](https://huggingface.co/datasets/Bretagne/OpenSubtitles_br_fr) & [Bretagne/Autogramm_Breton_translation](https://huggingface.co/datasets/Bretagne/Autogramm_Breton_translation) datasets
 * Monodirectionally fr->br fine-tuned
 * Reaches an honorable BLEU score of 40 on a 20% train/test split of the dataset
 
 What's inside the `gallek` subdirectory:
 * `train_translation_model.py` : used to fine-tune m2m100 model on the aforementionned datasets, with BLEU score evaluation at the end of training
 * `test_translation_model.py` : used to test the fine-tuned _gallek_ model on single input french text (also includes Apertium reverse translation)
-* `test_translation_mode_gradui` : used to test the fine-tuned _gallek_ model using a Gradio UI
+* `test_translation_mode_gradio` : used to test the fine-tuned _gallek_ model using a Gradio UI
 
 TODOs:
 - [x] Add new datasets in training corpus (initial one was *ofis_publik*)
@@ -86,6 +86,12 @@ For now:
 * Based on the [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) base model (seems to already know a bit of Breton)
 * Trained on _Gallek_ 50k
 
+What's inside the `gwellm` subdirectory:
+* `train_model_instruct.py` : used to fine-tune the Breton speaking instruct model
+* `test_model_instruct` : used to test the fine-tuned model (unmerged adapter)
+* `merge_adapter.py` : used to merge the fine-tuned adapter model to the base model 
+* `test_model_instruct_gradio.py` : used to test the quantized gguf model using a gradio chat UI
+
 TODOs:
 - [ ] Release an initial beta version
 - [ ] Distribute as [LLamafile](https://github.com/Mozilla-Ocho/llamafile)
@@ -94,7 +100,7 @@ TODOs:
 TODO FT Strategy
 [Instruction Pre-Training: Language Models are Supervised Multitask Learners]
 
-TODO scripts
+TODO sh scripts
 
 ## Using GweLLM
 

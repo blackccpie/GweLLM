@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import model_library
+
 from datasets import load_from_disk
 
 from transformers import (
@@ -36,23 +38,14 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 import math
 import torch
 
-#model_id        = 'meta-llama/Llama-3.2-1B-Instruct'
-#output_model_id = 'gwellm-llama3.2-1b-it'
-#start_pattern   = '<|start_header_id|>user<|end_header_id|>\n'
-#next_pattern    = '<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n'
-#end_pattern     = '<|eot_id|>'
-
-model_id        = 'google/gemma-2-2b-it'
-output_model_id = 'gwellm-gemma2-2b-it'
-start_pattern   = '<start_of_turn>user\n'
-next_pattern    = '<end_of_turn>\n<start_of_turn>model\n'
-end_pattern     = '<end_of_turn>'
+# load model card
+modelcard = model_library.get_modle('gemma2-2b')
 
 resume = False
 
 ############### PREPARE TOKENIZER
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained(modelcard.base_model_id)
 tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad token by default # TODO confirm & clarify?
 
 ############### PREPARE DATASET ###############
@@ -76,10 +69,10 @@ def generate_prompt(sample):
 
     # samples with additional context into
     if sample['input']:
-        text = f"""{start_pattern}{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}{next_pattern}{sample["output"]}{end_pattern}"""
+        text = f"""{modelcard.start_pattern}{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
     # without
     else:
-        text = f"""{start_pattern}{prefix_text}{sample["instruction"]}{next_pattern}{sample["output"]}{end_pattern}"""
+        text = f"""{modelcard.start_pattern}{prefix_text}{sample["instruction"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
     return text
 
 # add the "prompt" column in the dataset
@@ -125,7 +118,7 @@ lora_config = LoraConfig(
 
 # load quantized model
 model = AutoModelForCausalLM.from_pretrained(
-    model_id,
+    modelcard.base_model_id,
     device_map='auto',
     quantization_config=quant_config,
 )
@@ -140,7 +133,7 @@ if not resume:
 else:
     model = PeftModel.from_pretrained(
                 model, 
-                output_model_id, 
+                modelcard.adapter_model_id, 
                 is_trainable=True, 
                 quantization_config=quant_config,
                 device_map='auto')
@@ -151,7 +144,7 @@ else:
 training_args = TrainingArguments(
     report_to='none', # "codecarbon", "tensorboard", "wandb"
     overwrite_output_dir=True,
-    output_dir=output_model_id,
+    output_dir=modelcard.adapter_model_id,
     optim="paged_adamw_32bit",
     warmup_ratio=0.5,
     learning_rate=5e-5,
@@ -179,6 +172,6 @@ eval_results = trainer.evaluate()
 print(f">>> perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 
 print("-> saving model...")
-trainer.save_model(output_model_id)
+trainer.save_model(modelcard.adapter_model_id)
 
 
