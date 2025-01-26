@@ -1,7 +1,9 @@
 #!/bin/bash
 
+MODEL_CONFIG='gemma2-2b'
+
 # retrieve model id
-MODEL_ID=$(python3 -B model_library.py 'gemma2-2b')
+MODEL_ID=$(python3 -B model_library.py $MODEL_CONFIG name)
 echo "MODEL_ID: $MODEL_ID"
 
 LLAMA_CPP_DIR=${LLAMA_CPP_DIR}
