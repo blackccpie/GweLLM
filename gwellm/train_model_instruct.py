@@ -39,7 +39,7 @@ import math
 import torch
 
 # load model card
-modelcard = model_library.get_modle('gemma2-2b')
+modelcard = model_library.get_model('gemma2-2b')
 
 resume = False
 
