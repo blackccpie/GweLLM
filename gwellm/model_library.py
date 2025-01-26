@@ -51,3 +51,11 @@ def get_model(name: str):
         return croissantllm()
     elif name == 'gemma2-2b':
         return gemma2_2b()
+
+if __name__ == "__main__":
+
+    import sys
+
+    # load model card from name given as first program argument
+    modelcard = get_model(sys.argv[1])
+    print(modelcard.adapter_model_id)

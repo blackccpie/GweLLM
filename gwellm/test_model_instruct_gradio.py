@@ -23,7 +23,7 @@
 import gradio as gr
 
 # inference through HF transformers
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # inference through llama.cpp
 from llama_cpp import Llama
