@@ -78,7 +78,7 @@ def generate_prompt(sample):
 # add the "prompt" column in the dataset
 text_column = [generate_prompt(data_point) for data_point in dataset]
 dataset = dataset.add_column("prompt", text_column)
-dataset = dataset.shuffle(seed=1234)
+dataset = dataset.shuffle() #seed=1234
 
 def tokenize_function(samples):
     # tokenize input text
