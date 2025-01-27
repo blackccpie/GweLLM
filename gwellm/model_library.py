@@ -34,7 +34,7 @@ class llama3_2_1b:
 
 class croissantllm:
     base_model_id       = 'croissantllm/CroissantLLMChat-v0.1'
-    adapter_model_id    = 'croissantllmchat'
+    adapter_model_id    = 'gwellm-croissantllmchat'
     start_pattern       = '<|im_start|>user\n'
     next_pattern        = '<|im_end|>\n<|im_start|>assistant\n'
     end_pattern         = '<|im_end|>'
