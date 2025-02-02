@@ -79,6 +79,7 @@ What's inside the `goulenn` subdirectory:
 TODOs:
 - [x] Translate 50k samples (available on HF🤗 [here](https://huggingface.co/datasets/amurienne/Goulenn-Alpaca-Instruct-50k))
 - [x] Translate the whole 110k (available on HF🤗 [here](https://huggingface.co/datasets/amurienne/Goulenn-Alpaca-Instruct-110k))
+- [ ] Generate new instruction data using a ["Magpie"](https://magpie-align.github.io) like synthesis approach (WIP in `goulenn/magpie_instruct_dataset_generation.py`)
 
 ## Fine-Tuning GweLLM
 
@@ -95,7 +96,7 @@ What's inside the `gwellm` subdirectory:
 TODOs:
 - [ ] Release an initial beta version
 - [ ] Distribute as [LLamafile](https://github.com/Mozilla-Ocho/llamafile)
-- [ ] Hybrid Fine-Tuning
+- [ ] Hybrid Fine-Tuning (start with a pretraining with a raw breton text corpus)
 
 TODO FT Strategy
 [Instruction Pre-Training: Language Models are Supervised Multitask Learners]
