@@ -22,7 +22,7 @@
 
 import model_library
 
-from datasets import load_from_disk
+from datasets import load_from_disk, load_dataset
 
 from transformers import (
     AutoTokenizer, 
@@ -41,6 +41,7 @@ import torch
 # load model card
 modelcard = model_library.get_model('gemma2-2b')
 
+force_pretraining = False
 resume = False
 
 ############### PREPARE TOKENIZER
@@ -50,48 +51,90 @@ tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad tok
 
 ############### PREPARE DATASET ###############
 
-# saved in ~/.cache/huggingface/datasets
-dataset = load_from_disk("../goulenn/goulenn-alpaca-110000")
-
-print(dataset)
-
-def generate_prompt(sample):
-    
-    prefix_text_input = """Amañ dindan e kavoc'h un hentenn a zeskriv un trevell a-gevret gant ur meneg hag a zegas un endro ouzhpenn.
-    Skrivit ur respont hag a respont mat d’ar goulenn.
-    
+def tokenize_instruct_dataset():
     """
-    
-    prefix_text = """Amañ dindan e kavot un deskadurezh e brezhoneg a zeskriv un trevell.
-    Skrivit ur respont hag a respont mat d’ar goulenn.
-    
+    Loads and tokenizes instruct dataset
     """
 
-    # samples with additional context into
-    if sample['input']:
-        text = f"""{modelcard.start_pattern}{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
-    # without
-    else:
-        text = f"""{modelcard.start_pattern}{prefix_text}{sample["instruction"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
-    return text
+    # saved in ~/.cache/huggingface/datasets
+    dataset = load_from_disk("../goulenn/goulenn-alpaca-110000")
 
-# add the "prompt" column in the dataset
-text_column = [generate_prompt(data_point) for data_point in dataset]
-dataset = dataset.add_column("prompt", text_column)
-dataset = dataset.shuffle() #seed=1234
+    print("loaded dataset infos:")
+    print(dataset)
 
-def tokenize_function(samples):
-    # tokenize input text
-    tokenized = tokenizer(samples["prompt"], padding="max_length", max_length=512, truncation=True)
-    # set the labels to be the same as the input_ids for causal language modeling
-    tokenized["labels"] = tokenized["input_ids"]
-    return tokenized
+    def generate_prompt(sample):
+        
+        prefix_text_input = """Amañ dindan e kavoc'h un hentenn a zeskriv un trevell a-gevret gant ur meneg hag a zegas un endro ouzhpenn.
+        Skrivit ur respont hag a respont mat d’ar goulenn.
+        
+        """
+        
+        prefix_text = """Amañ dindan e kavot un deskadurezh e brezhoneg a zeskriv un trevell.
+        Skrivit ur respont hag a respont mat d’ar goulenn.
+        
+        """
 
-tokenized_dataset = dataset.map(tokenize_function, batched=True)
-tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels']) # TODO : why is that mandatory???? correct also in sandboxed train_model.py
-tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.2)
+        # samples with additional context into
+        if sample['input']:
+            text = f"""{modelcard.start_pattern}{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
+        # without
+        else:
+            text = f"""{modelcard.start_pattern}{prefix_text}{sample["instruction"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
+        return text
 
-#print(tokenized_dataset['train'][0])
+    # add the "prompt" column in the dataset
+    text_column = [generate_prompt(data_point) for data_point in dataset]
+    dataset = dataset.add_column("prompt", text_column)
+    dataset = dataset.shuffle() #seed=1234
+
+    def tokenize_function(samples):
+        # tokenize input text
+        tokenized = tokenizer(samples["prompt"], padding="max_length", max_length=512, truncation=True)
+        # set the labels to be the same as the input_ids for causal language modeling
+        tokenized["labels"] = tokenized["input_ids"]
+        return tokenized
+
+    tokenized_dataset = dataset.map(tokenize_function, batched=True)
+    tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels']) # TODO : why is that mandatory???? correct further down, and also in sandboxed train_model.py
+    tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.2)
+
+    #print(tokenized_dataset['train'][0])
+
+    return tokenized_dataset
+
+def tokenize_pretraining_dataset():
+    """
+    Loads and tokenizes causal pretraining dataset
+    """
+
+    # load dataset
+    dataset = load_dataset("Bretagne/WikiMatrix_br")
+    dataset = dataset.shuffle() #seed=1234
+
+    print("loaded dataset infos:")
+    print(dataset)
+
+    def tokenize_function(samples):
+        # tokenize input text
+        tokenized = tokenizer(samples["text"], padding="max_length", max_length=128, truncation=True)
+        # set the labels to be the same as the input_ids for causal language modeling
+        tokenized["labels"] = tokenized["input_ids"]
+        return tokenized
+
+    tokenized_dataset = dataset.map(tokenize_function, batched=True)
+    tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels'])
+    tokenized_dataset = tokenized_dataset['train'].train_test_split(test_size=0.2)
+
+    #print(tokenized_dataset['train'][0])
+
+    return tokenized_dataset
+
+tokenized_dataset = None
+
+if force_pretraining:
+    tokenized_dataset = tokenize_pretraining_dataset()
+else:
+    tokenized_dataset = tokenize_instruct_dataset()
 
 ############### PREPARE MODEL ###############
 
