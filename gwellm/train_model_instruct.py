@@ -63,23 +63,13 @@ def tokenize_instruct_dataset():
     print(dataset)
 
     def generate_prompt(sample):
-        
-        prefix_text_input = """Amañ dindan e kavoc'h un hentenn a zeskriv un trevell a-gevret gant ur meneg hag a zegas un endro ouzhpenn.
-        Skrivit ur respont hag a respont mat d’ar goulenn.
-        
-        """
-        
-        prefix_text = """Amañ dindan e kavot un deskadurezh e brezhoneg a zeskriv un trevell.
-        Skrivit ur respont hag a respont mat d’ar goulenn.
-        
-        """
 
         # samples with additional context into
         if sample['input']:
-            text = f"""{modelcard.start_pattern}{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
+            text = f"""{modelcard.start_pattern}{sample["instruction"]}\n\n{sample["input"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
         # without
         else:
-            text = f"""{modelcard.start_pattern}{prefix_text}{sample["instruction"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
+            text = f"""{modelcard.start_pattern}{sample["instruction"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
         return text
 
     # add the "prompt" column in the dataset
