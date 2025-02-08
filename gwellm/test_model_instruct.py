@@ -45,6 +45,6 @@ model.config.use_cache = True
 
 with torch.no_grad():
     inputs = tokenizer([modelcard.test_query], add_special_tokens=True, return_tensors="pt").to("cuda")
-    outputs = model.generate(**inputs, max_new_tokens = 256, pad_token_id=tokenizer.pad_token_id)
+    outputs = model.generate(**inputs, max_new_tokens = 256, temperature=0.1, pad_token_id=tokenizer.pad_token_id)
     print(f"\n\nADAPTER MODEL OUTPUT:\n{tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)}")
 

@@ -65,7 +65,7 @@ class tf_inference:
         inputs = self.__tokenizer(prompt, return_tensors="pt")
 
         # generate a response from the model
-        outputs = self.__model.generate(**inputs)
+        outputs = self.__model.generate(**inputs, temperature=0.1)
 
         # decode the generated response
         return self.__tokenizer.decode(outputs[0], skip_special_tokens=True)
