@@ -85,7 +85,7 @@ print("loaded dataset infos:")
 print(dataset)
 
 dataset = dataset.shuffle()
-dataset = dataset['train'].train_test_split(test_size=0.2)
+dataset = dataset['train'].train_test_split(test_size=0.05)
 
 print(dataset["train"][0])
 

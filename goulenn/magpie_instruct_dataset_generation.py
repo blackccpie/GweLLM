@@ -41,8 +41,8 @@ def clean_question(question):
     """
     # regex explanation:
     # ^\d+[\).]?\s* → removes leading numbers (e.g., "1)", "5.", etc.) and spaces
-    # ^["«]* → removes leading quotes (") and guillemets («)
-    question = re.sub(r'^(?:\d+[\).]?\s*)?["«]*', '', question).strip()
+    # ^["«]* → removes leading quotes ("), guillemets («), and dash (-)
+    question = re.sub(r'^(?:\d+[\).]?\s*)?["«-]*', '', question).strip()
     # ensure the first letter is capitalized
     return question[0].upper() + question[1:]
 
@@ -52,29 +52,53 @@ def extract_question(model_output):
     """
     try:
         extract_question = f"{model_output.split('?')[0].strip()}?"
-        print(f"extracted: {extract_question}")
+        print(rf"extracted Q: {extract_question}")
         return clean_question(extract_question)
     except:
-        print("failed extraction question from answer")
+        print("failed extracting question")
+        return None
+
+def clean_answer(model_output):
+    """
+    Clean the answer from unwanted formatting
+    """
+    # use regex to remove leading spaces and a colon (if present), along with spaces after the colon.
+    answer = re.sub(r'^\s*:\s*', '', model_output).strip()
+    return answer
 
 def extract_answer(model_output):
     """
     Clean the question from leading unwanted formatting
     """
-    return f"{model_output.split('.')[0].strip()}."
+    try:
+        extract_answer = f"{model_output.split('.')[0].strip()}."
+        print(rf"extracted A: {extract_answer}")
+        return clean_answer(extract_answer)
+    except:
+        print("failed extracting answer")
+        return None
 
 questions = []
 answers = []
 
 # create QA pairs iteratively
-for i in range(2):
+for i in range(5):
     q_gen = pipe(pre_query_template_with_system_prompt, chat_template=None)[0]['generated_text']
     question = extract_question(q_gen)
     print(f"clean: {question}")
     print("--")
-    a_gen = pipe(f"<|im_start|>user\nrépond à la question suivante en UNE SEULE phrase: {question}<|im_end|><|im_start|>assistant\n")[0]['generated_text']
+    a_gen = pipe(
+        f"""<|im_start|>user
+        répond directement à la question suivante en UNE SEULE phrase, en commençant directement par du texte.
+        
+        Par exemple: Quelle est la capitale de la France?
+        Sortie attendue: La capitale de la France est Paris.
+
+        Question: {question}
+        <|im_end|><|im_start|>assistant"""
+        )[0]['generated_text']
     answer = extract_answer(a_gen)
-    print(answer)
+    print(f"clean A: {answer}")
     print("------------------------")
 
     questions.append(question)
