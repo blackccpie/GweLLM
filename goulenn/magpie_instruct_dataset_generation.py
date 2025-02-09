@@ -33,7 +33,7 @@ pre_query_template_with_system_prompt = "<|im_start|>user\nje suis un français,
 tokenizer = AutoTokenizer.from_pretrained(modelcard, use_fast=True, legacy=False)
 model = AutoModelForCausalLM.from_pretrained(modelcard, device_map='auto')
 
-pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.9, truncation=True, max_length=256, return_full_text=False)
+pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, truncation=True, max_length=512, return_full_text=False)
 
 def clean_question(question):
     """
@@ -82,14 +82,14 @@ questions = []
 answers = []
 
 # create QA pairs iteratively
-for i in range(5):
+for i in range(10):
     q_gen = pipe(pre_query_template_with_system_prompt, chat_template=None)[0]['generated_text']
     question = extract_question(q_gen)
-    print(f"clean: {question}")
+    print(f"clean:\n\033[96m{question}\033[0m")
     print("--")
     a_gen = pipe(
         f"""<|im_start|>user
-        répond directement à la question suivante en UNE SEULE phrase, en commençant directement par du texte.
+        répond directement à la question suivante en UNE SEULE phrase complète, en commençant directement par du texte.
         
         Par exemple: Quelle est la capitale de la France?
         Sortie attendue: La capitale de la France est Paris.
@@ -98,7 +98,7 @@ for i in range(5):
         <|im_end|><|im_start|>assistant"""
         )[0]['generated_text']
     answer = extract_answer(a_gen)
-    print(f"clean A: {answer}")
+    print(f"clean A:\n\033[92m{answer}\033[0m")
     print("------------------------")
 
     questions.append(question)
