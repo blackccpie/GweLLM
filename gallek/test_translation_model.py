@@ -34,7 +34,7 @@ print("input fr text: " + fr_text)
 print("Gallek translation: " + result)
 print("Apertium reverse translation: " + apertium.translate_br2fr(result))
 
-br_text = "treiñ eus ar galleg d'ar brezhoneg : deskiñ a ran brezhoneg er skol."
+br_text = "treiñ eus ar galleg d'ar brezhoneg: deskiñ a ran brezhoneg er skol."
 
 kg = kellag()
 result = kg.translate_br2fr(br_text)

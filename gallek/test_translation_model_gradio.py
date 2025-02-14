@@ -23,30 +23,56 @@
 import gradio as gr
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
-modelcard = "gallek-m2m100-b40"
+fw_modelcard = "gallek-m2m100-b40"
+bw_modelcard = "kellag-m2m100-b51"
 
-model = AutoModelForSeq2SeqLM.from_pretrained(modelcard)
-tokenizer = AutoTokenizer.from_pretrained(modelcard)
+fw_model = AutoModelForSeq2SeqLM.from_pretrained(fw_modelcard)
+fw_tokenizer = AutoTokenizer.from_pretrained(fw_modelcard)
 
-def translate(text):
-    """
-    Translate the text from source lang to target lang
-    """
-    translation_pipeline = pipeline("translation", model=model, tokenizer=tokenizer, src_lang='fr', tgt_lang='br', max_length=400, device="cuda")
-    result = translation_pipeline("traduis de français en breton: " + text)
-    return result[0]['translation_text']
+fw_translation_pipeline = pipeline("translation", model=fw_model, tokenizer=fw_tokenizer, src_lang='fr', tgt_lang='br', max_length=400, device="cuda")
 
-demo = gr.Interface(
-    fn=translate,
-    inputs=[
-        gr.components.Textbox(label="French"),
-    ],
-    outputs=[
-        gr.components.Textbox(label="Breton")
-    ],
-    cache_examples=False,
-    title="Gallek French -> Breton Translation Demo",
-    allow_flagging='never'
-)
+bw_model = AutoModelForSeq2SeqLM.from_pretrained(bw_modelcard)
+bw_tokenizer = AutoTokenizer.from_pretrained(bw_modelcard)
+
+bw_translation_pipeline = pipeline("translation", model=bw_model, tokenizer=bw_tokenizer, src_lang='br', tgt_lang='fr', max_length=400, device="cuda")
+
+# translation function
+def translate(text, direction):
+    if direction == "fr_to_br":
+        return fw_translation_pipeline("traduis de français en breton: " + text)[0]['translation_text']
+    else:
+        return bw_translation_pipeline("treiñ eus ar galleg d'ar brezhoneg: " + text)[0]['translation_text']
+
+# function to switch translation direction
+def switch_direction(direction):
+    return "br_to_fr" if direction == "fr_to_br" else "fr_to_br"
+
+# function to update labels dynamically
+def update_labels(direction):
+    if direction == "br_to_fr":
+        return gr.Textbox(label="Breton"), gr.Textbox(label="French")
+    else:
+        return gr.Textbox(label="French"), gr.Textbox(label="Breton")
+
+with gr.Blocks() as demo:
+
+    gr.Markdown("# Gallek French <-> Breton Translation Demo")
+
+    direction = gr.State("fr_to_br")  # default direction is French to Breton
+    
+    input_text = gr.Textbox(label="French")
+    output_text = gr.Textbox(label="Breton")
+    
+    with gr.Row():
+        translate_btn = gr.Button("Translate", variant='primary')
+        switch_btn = gr.Button("Switch Direction", variant='secondary')
+
+    # translation logic
+    translate_btn.click(translate, [input_text, direction], output_text)
+
+    # switch direction logic
+    switch_btn.click(switch_direction, direction, direction).then(
+        update_labels, direction, [input_text, output_text]
+    )
 
 demo.launch()
