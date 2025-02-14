@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import model_library
+
 from transformers import (
     AutoTokenizer, 
     AutoModelForCausalLM
@@ -27,13 +29,14 @@ from transformers import (
 
 from peft import PeftModel
 
-base_id = 'google/gemma-2-2b-it'
-adapter_id = 'gwellm-gemma2-2b-it'
-output_id = 'gwellm-gemma2-2b-it-merged'
+# load model card
+modelcard = model_library.get_model('gemma2-2b')
 
-base_model = AutoModelForCausalLM.from_pretrained(base_id)
-model = PeftModel.from_pretrained(base_model, adapter_id)
+merged_model_id =  modelcard.adapter_model_id + '-merged'
+
+base_model = AutoModelForCausalLM.from_pretrained(modelcard.base_model_id)
+model = PeftModel.from_pretrained(base_model, modelcard.adapter_model_id)
 model = model.merge_and_unload()
-model.save_pretrained(output_id)
-tokenizer = AutoTokenizer.from_pretrained(base_id)
-tokenizer.save_pretrained(output_id)
+model.save_pretrained(merged_model_id)
+tokenizer = AutoTokenizer.from_pretrained(modelcard.base_model_id)
+tokenizer.save_pretrained(merged_model_id)

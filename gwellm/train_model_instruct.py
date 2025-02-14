@@ -20,7 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from datasets import load_from_disk
+import model_library
+
+from datasets import load_from_disk, load_dataset
 
 from transformers import (
     AutoTokenizer, 
@@ -36,69 +38,93 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 import math
 import torch
 
-#model_id        = 'meta-llama/Llama-3.2-1B-Instruct'
-#output_model_id = 'gwellm-llama3.2-1b-it'
-#start_pattern   = '<|start_header_id|>user<|end_header_id|>\n'
-#next_pattern    = '<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n'
-#end_pattern     = '<|eot_id|>'
+# load model card
+modelcard = model_library.get_model('gemma2-2b')
 
-model_id        = 'google/gemma-2-2b-it'
-output_model_id = 'gwellm-gemma2-2b-it'
-start_pattern   = '<start_of_turn>user\n'
-next_pattern    = '<end_of_turn>\n<start_of_turn>model\n'
-end_pattern     = '<end_of_turn>'
-
+force_pretraining = False
 resume = False
 
 ############### PREPARE TOKENIZER
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained(modelcard.base_model_id)
 tokenizer.pad_token_id = tokenizer.eos_token_id # Most LLMs don't have a pad token by default # TODO confirm & clarify?
 
 ############### PREPARE DATASET ###############
 
-# saved in ~/.cache/huggingface/datasets
-dataset = load_from_disk("../goulenn/goulenn-alpaca-110000")
-
-print(dataset)
-
-def generate_prompt(sample):
-    
-    prefix_text_input = """Amañ dindan e kavoc'h un hentenn a zeskriv un trevell a-gevret gant ur meneg hag a zegas un endro ouzhpenn.
-    Skrivit ur respont hag a respont mat d’ar goulenn.
-    
+def tokenize_instruct_dataset():
     """
-    
-    prefix_text = """Amañ dindan e kavot un deskadurezh e brezhoneg a zeskriv un trevell.
-    Skrivit ur respont hag a respont mat d’ar goulenn.
-    
+    Loads and tokenizes instruct dataset
     """
 
-    # samples with additional context into
-    if sample['input']:
-        text = f"""{start_pattern}{prefix_text_input}{sample["instruction"]}, setu ar roadennoù mont e-barzh: {sample["input"]}{next_pattern}{sample["output"]}{end_pattern}"""
-    # without
-    else:
-        text = f"""{start_pattern}{prefix_text}{sample["instruction"]}{next_pattern}{sample["output"]}{end_pattern}"""
-    return text
+    # saved in ~/.cache/huggingface/datasets
+    dataset = load_from_disk("../goulenn/goulenn-alpaca-110000")
 
-# add the "prompt" column in the dataset
-text_column = [generate_prompt(data_point) for data_point in dataset]
-dataset = dataset.add_column("prompt", text_column)
-dataset = dataset.shuffle(seed=1234)
+    print("loaded dataset infos:")
+    print(dataset)
 
-def tokenize_function(samples):
-    # tokenize input text
-    tokenized = tokenizer(samples["prompt"], padding="max_length", max_length=512, truncation=True)
-    # set the labels to be the same as the input_ids for causal language modeling
-    tokenized["labels"] = tokenized["input_ids"]
-    return tokenized
+    def generate_prompt(sample):
 
-tokenized_dataset = dataset.map(tokenize_function, batched=True)
-tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels']) # TODO : why is that mandatory???? correct also in sandboxed train_model.py
-tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.2)
+        # samples with additional context into
+        if sample['input']:
+            text = f"""{modelcard.start_pattern}{sample["instruction"]}\n\n{sample["input"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
+        # without
+        else:
+            text = f"""{modelcard.start_pattern}{sample["instruction"]}{modelcard.next_pattern}{sample["output"]}{modelcard.end_pattern}"""
+        return text
 
-#print(tokenized_dataset['train'][0])
+    # add the "prompt" column in the dataset
+    text_column = [generate_prompt(data_point) for data_point in dataset]
+    dataset = dataset.add_column("prompt", text_column)
+    dataset = dataset.shuffle() #seed=1234
+
+    def tokenize_function(samples):
+        # tokenize input text
+        tokenized = tokenizer(samples["prompt"], padding="max_length", max_length=512, truncation=True)
+        # set the labels to be the same as the input_ids for causal language modeling
+        tokenized["labels"] = tokenized["input_ids"]
+        return tokenized
+
+    tokenized_dataset = dataset.map(tokenize_function, batched=True)
+    tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels']) # TODO : why is that mandatory???? correct further down, and also in sandboxed train_model.py
+    tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.2)
+
+    #print(tokenized_dataset['train'][0])
+
+    return tokenized_dataset
+
+def tokenize_pretraining_dataset():
+    """
+    Loads and tokenizes causal pretraining dataset
+    """
+
+    # load dataset
+    dataset = load_dataset("Bretagne/WikiMatrix_br")
+    dataset = dataset.shuffle() #seed=1234
+
+    print("loaded dataset infos:")
+    print(dataset)
+
+    def tokenize_function(samples):
+        # tokenize input text
+        tokenized = tokenizer(samples["text"], padding="max_length", max_length=128, truncation=True)
+        # set the labels to be the same as the input_ids for causal language modeling
+        tokenized["labels"] = tokenized["input_ids"]
+        return tokenized
+
+    tokenized_dataset = dataset.map(tokenize_function, batched=True)
+    tokenized_dataset.set_format(type="torch", columns=['input_ids', 'labels'])
+    tokenized_dataset = tokenized_dataset['train'].train_test_split(test_size=0.2)
+
+    #print(tokenized_dataset['train'][0])
+
+    return tokenized_dataset
+
+tokenized_dataset = None
+
+if force_pretraining:
+    tokenized_dataset = tokenize_pretraining_dataset()
+else:
+    tokenized_dataset = tokenize_instruct_dataset()
 
 ############### PREPARE MODEL ###############
 
@@ -125,7 +151,7 @@ lora_config = LoraConfig(
 
 # load quantized model
 model = AutoModelForCausalLM.from_pretrained(
-    model_id,
+    modelcard.base_model_id,
     device_map='auto',
     quantization_config=quant_config,
 )
@@ -140,7 +166,7 @@ if not resume:
 else:
     model = PeftModel.from_pretrained(
                 model, 
-                output_model_id, 
+                modelcard.adapter_model_id, 
                 is_trainable=True, 
                 quantization_config=quant_config,
                 device_map='auto')
@@ -151,7 +177,7 @@ else:
 training_args = TrainingArguments(
     report_to='none', # "codecarbon", "tensorboard", "wandb"
     overwrite_output_dir=True,
-    output_dir=output_model_id,
+    output_dir=modelcard.adapter_model_id,
     optim="paged_adamw_32bit",
     warmup_ratio=0.5,
     learning_rate=5e-5,
@@ -179,6 +205,6 @@ eval_results = trainer.evaluate()
 print(f">>> perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 
 print("-> saving model...")
-trainer.save_model(output_model_id)
+trainer.save_model(modelcard.adapter_model_id)
 
 
