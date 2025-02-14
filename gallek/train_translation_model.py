@@ -79,8 +79,6 @@ if revert:
 
 # load dataset #1
 ofis_dataset = load_dataset("Bretagne/ofis_publik_br-fr")
-ofis_dataset = ofis_dataset.rename_column('français', 'fr')
-ofis_dataset = ofis_dataset.rename_column('breton', 'br')
 
 # load dataset #2
 subtitles_dataset = load_dataset('Bretagne/OpenSubtitles_br_fr')
