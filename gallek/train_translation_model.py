@@ -40,11 +40,15 @@ import numpy as np
 
 import sys
 
+checkpoint_base="facebook/m2m100_418M"
+checkpoint = "gallek-m2m100"
+
 resume = False
 revert = False # set to True for backward br->fr translation training
 
 # quick hack to manage program arguments 
-if len(sys.argv) == 3:
+# override resume/revert
+if len(sys.argv) >= 3:
     if sys.argv[1] == 'resume':
         resume = True
     elif sys.argv[1] == 'nresume':
@@ -53,6 +57,12 @@ if len(sys.argv) == 3:
         revert = True
     elif sys.argv[2] == 'nrevert':
         revert = False
+# override checkpont name
+if(len(sys.argv)) == 4:
+    checkpoint = sys.argv[3] 
+
+# print parameters summary
+print(f"training params: resume({resume}) / revert({revert}) / checkpoint({checkpoint})")
 
 source_lang='fr'
 target_lang='br'
@@ -89,8 +99,6 @@ dataset = dataset['train'].train_test_split(test_size=0.05)
 
 print(dataset["train"][0])
 
-checkpoint_base="facebook/m2m100_418M"
-checkpoint = "gallek-m2m100"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint_base)
 tokenizer.src_lang = source_lang
 tokenizer.tgt_lang = target_lang
