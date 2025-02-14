@@ -24,24 +24,49 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
 import torch
 
-class gallek:
+class base_translator:
     """
-    French to Breton translator based on fine-tuned M2M100 base model
+    Base translator class using fine-tuned M2M100 models.
     """
+    def __init__(self, checkpoint: str, src_lang: str, tgt_lang: str, chdir: str = './', max_length: int = 400, batch_size: int = 1):
+        self._checkpoint = checkpoint
+        self._tokenizer = AutoTokenizer.from_pretrained(chdir + self._checkpoint)
+        self._model = AutoModelForSeq2SeqLM.from_pretrained(chdir + self._checkpoint, device_map="auto")
+        self._model.eval()
+        self._model.config.use_cache = True
+        self._translation_pipeline = pipeline("translation", model=self._model, tokenizer=self._tokenizer, 
+                                             src_lang=src_lang, tgt_lang=tgt_lang, max_length=max_length, batch_size=batch_size)
 
-    __checkpoint = "gallek-m2m100-b40"
+    def _translate_batch(self, samples: str):
+        with torch.no_grad():
+            return self._translation_pipeline(samples)
 
-    def __init__(self, chdir: str='./', max_length: int=400, batch_size: int=1):
-        self.__tokenizer = AutoTokenizer.from_pretrained(chdir + self.__checkpoint)
-        self.__model = AutoModelForSeq2SeqLM.from_pretrained(chdir + self.__checkpoint, device_map="auto")
-        self.__model.eval()
-        self.__model.config.use_cache = True
-        self.__translation_pipeline = pipeline("translation", model=self.__model, tokenizer=self.__tokenizer, src_lang='fr', tgt_lang='br', max_length=max_length, batch_size=batch_size)
+    def _translate(self, text: str):
+        with torch.no_grad():
+            return self._translation_pipeline(text)[0]['translation_text']
+
+class gallek(base_translator):
+    """
+    French to Breton translator.
+    """
+    def __init__(self, chdir: str = './', max_length: int = 400, batch_size: int = 1):
+        super().__init__(checkpoint="gallek-m2m100-b40", src_lang='fr', tgt_lang='br', chdir=chdir, max_length=max_length, batch_size=batch_size)
 
     def translate_fr2br_batch(self, samples: str):
-        with torch.no_grad():
-            return self.__translation_pipeline(samples)
+        return self._translate_batch(samples)
 
     def translate_fr2br(self, text: str):
-        with torch.no_grad():
-            return self.__translation_pipeline(text)[0]['translation_text']
+        return self._translate(text)
+
+class kellag(base_translator):
+    """
+    Breton to French translator.
+    """
+    def __init__(self, chdir: str = './', max_length: int = 400, batch_size: int = 1):
+        super().__init__(checkpoint="kellag-m2m100-b51", src_lang='br', tgt_lang='fr', chdir=chdir, max_length=max_length, batch_size=batch_size)
+
+    def translate_br2fr_batch(self, samples: str):
+        return self._translate_batch(samples)
+
+    def translate_br2fr(self, text: str):
+        return self._translate(text)

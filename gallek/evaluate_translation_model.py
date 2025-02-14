@@ -60,7 +60,7 @@ print("loaded dataset infos:")
 print(dataset)
 
 dataset = dataset.shuffle(seeds=42)
-dataset = dataset['train'].train_test_split(test_size=0.001)
+dataset = dataset['train'].train_test_split(test_size=0.2)
 
 ### step 3: Generate translations
 references = []  # list to hold reference translations
