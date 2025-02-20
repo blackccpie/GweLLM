@@ -133,5 +133,5 @@ Here are the few resources I found after initial googling:
 Installing `llama-cpp-python` can be a bit tricky, as I really struggled to install it on WSL2 (Ubuntu 22.04):
 * The classic `pip install llama-cpp-python` systematically failed as described in [this issue](https://github.com/abetlen/llama-cpp-python/issues/1876)
 * The documented way of installing a prebuilt cpu-only wheel `pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu` also failed
-* I finally downloaded the [`llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl`](https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.2/llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl) package from the wheel repository and installed it manually with `pip install pip install llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl`
+* I finally downloaded the [`llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl`](https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.2/llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl) package from the wheel repository and installed it manually with `pip install llama_cpp_python-0.3.2-cp310-cp310-linux_x86_64.whl`
 * As I encountered issues related to `libc.musl` dependency I had to use [this workaround](https://github.com/abetlen/llama-cpp-python/issues/1628#issuecomment-2254571128)
