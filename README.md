@@ -18,7 +18,7 @@ Output models and datasets will be made available on my [HuggingFace repo 🤗](
 
 This is a Work in Progress...
 
-## Approach
+## :rocket: Approach
 
 Let's breakdown the problem:
 * The global idea is to fine-tune an existing multi-lingual LLM, ideally one that saw some Breton during its tokenizer/model pre-training.
@@ -46,7 +46,7 @@ So this project has 3 "by-products":
 
 All code is mainly based on HuggingFace's [Transformers](https://huggingface.co/docs/transformers/index) library.
 
-## Building the _Gallek_ fr->br translation model
+## ⚙️ Building the _Gallek_ fr->br translation model
 
 For now:
 * Based on the [facebook/m2m100_418M](https://huggingface.co/facebook/m2m100_418M) base model
@@ -56,16 +56,18 @@ For now:
 
 What's inside the `gallek` subdirectory:
 * `train_translation_model.py` : used to fine-tune m2m100 model on the aforementionned datasets, with BLEU score evaluation at the end of training
+* `evaluate_translation_model.py` : used to compute BLEU score on a finetuned model (no training code)
 * `test_translation_model.py` : used to test the fine-tuned _gallek_ model on single input french text (also includes Apertium reverse translation)
-* `test_translation_mode_gradio` : used to test the fine-tuned _gallek_ model using a Gradio UI
+* `test_translation_model_gradio.py` : used to test the fine-tuned _gallek_ model using a Gradio UI
 
 TODOs:
 - [x] Add new datasets in training corpus (initial one was *ofis_publik*)
+- [x] Reach a high quality 50 BLEU score
+- [x] Train a separate br->fr backward translation model, waiting for the bidirectional one... it is called _Kellag_ :sweat_smile:
 - [ ] Add some gguf conversion/quantization scripts using llama.cpp, _**spoiler alert : m2m100 seems unsupported**_ :scream:
-- [ ] Reach a high quality 50 BLEU score
 - [ ] Train bidirectional version
 
-## Building the _Goulenn_ Breton Instruct Dataset
+## ⚙️ Building the _Goulenn_ Breton Instruct Dataset
 
 For now:
 * Based on the original [jpacifico/French-Alpaca-dataset-Instruct-110K](https://huggingface.co/datasets/jpacifico/French-Alpaca-dataset-Instruct-110K?row=9), thanks to the work of Jonathan Pacifico.
@@ -81,7 +83,7 @@ TODOs:
 - [x] Translate the whole 110k (available on HF🤗 [here](https://huggingface.co/datasets/amurienne/Goulenn-Alpaca-Instruct-110k))
 - [ ] Generate new instruction data using a ["Magpie"](https://magpie-align.github.io) like synthesis approach (WIP in `goulenn/magpie_instruct_dataset_generation.py`)
 
-## Fine-Tuning GweLLM
+## :wrench: Fine-Tuning GweLLM
 
 For now:
 * Based on the [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) base model (seems to already know a bit of Breton)
@@ -101,9 +103,7 @@ TODOs:
 TODO FT Strategy
 [Instruction Pre-Training: Language Models are Supervised Multitask Learners]
 
-TODO sh scripts
-
-## Using GweLLM
+## :computer: Using GweLLM
 
 ### Import in GPT4All
 
@@ -126,7 +126,7 @@ Here are the few resources I found after initial googling:
 * [Free online translation tool](https://niverel.brezhoneg.bzh/fr/troer/) :thumbsup:
 * [Reddit thread about Breton LLM](https://www.reddit.com/r/Bretagne/comments/1d7389i/modèle_génératif_llm_langue_bretonne)
 
-## Troubleshooting
+## :dizzy_face: Troubleshooting
 
 ### Installing `llama-cpp-python`
 

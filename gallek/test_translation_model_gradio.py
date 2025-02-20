@@ -48,15 +48,15 @@ def switch_direction(direction):
     return "br_to_fr" if direction == "fr_to_br" else "fr_to_br"
 
 # function to update labels dynamically
-def update_labels(direction):
+def update_labels(direction, input_text, output_text):
     if direction == "br_to_fr":
-        return gr.Textbox(label="Breton"), gr.Textbox(label="French")
+        return gr.Textbox(output_text, label="Breton"), gr.Textbox(input_text, label="French")
     else:
-        return gr.Textbox(label="French"), gr.Textbox(label="Breton")
+        return gr.Textbox(output_text, label="French"), gr.Textbox(input_text, label="Breton")
 
 with gr.Blocks() as demo:
 
-    gr.Markdown("# Gallek French <-> Breton Translation Demo")
+    gr.Markdown("# Gallek French ↔️ Breton Translation Demo")
 
     direction = gr.State("fr_to_br")  # default direction is French to Breton
     
@@ -64,15 +64,15 @@ with gr.Blocks() as demo:
     output_text = gr.Textbox(label="Breton")
     
     with gr.Row():
-        translate_btn = gr.Button("Translate", variant='primary')
-        switch_btn = gr.Button("Switch Direction", variant='secondary')
+        translate_btn = gr.Button("Translate", variant='primary', scale=2)
+        switch_btn = gr.Button("Switch Direction 🔃", variant='secondary', scale=1)
 
     # translation logic
     translate_btn.click(translate, [input_text, direction], output_text)
 
     # switch direction logic
     switch_btn.click(switch_direction, direction, direction).then(
-        update_labels, direction, [input_text, output_text]
+        update_labels, [direction, input_text, output_text], [input_text, output_text]
     )
 
 demo.launch()
