@@ -75,7 +75,7 @@ def format_prompt_with_history(message, native_chat_history):
         prompt += f"<|start_header_id|>{interaction['role']}<|end_header_id|>\n{interaction['content']}<|eot_id|>\n"
 
     # add the current user message
-    prompt += f"<|start_header_id|>user<|end_header_id|>\ntu es un assistant francophone. Répond en une seule phrase sans formattage.<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n"
+    prompt += f"<|start_header_id|>user<|end_header_id|>\ntu es un assistant francophone. Répond en une seule phrase sans formattage.\n{message}<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n"
 
     return prompt
 
