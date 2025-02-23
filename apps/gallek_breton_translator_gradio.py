@@ -23,8 +23,8 @@
 import gradio as gr
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
-fw_modelcard = "gallek-m2m100-b51"
-bw_modelcard = "kellag-m2m100-b51"
+fw_modelcard = "../gallek/gallek-m2m100-b51"
+bw_modelcard = "../gallek/kellag-m2m100-b51"
 
 fw_model = AutoModelForSeq2SeqLM.from_pretrained(fw_modelcard)
 fw_tokenizer = AutoTokenizer.from_pretrained(fw_modelcard)
