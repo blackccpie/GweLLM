@@ -34,7 +34,7 @@ import torch
 
 # CHAT MODEL
 
-chat_modelcard = 'google/gemma-2-2b-it'
+chat_modelcard = 'meta-llama/Llama-3.2-3B-Instruct'
 
 tokenizer = AutoTokenizer.from_pretrained(chat_modelcard)
 model = AutoModelForCausalLM.from_pretrained(chat_modelcard, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
@@ -43,8 +43,8 @@ chat_pipeline = pipeline('text-generation', model=model, tokenizer=tokenizer, do
 
 # TRANSLATION MODELS
 
-fw_modelcard = "gallek-m2m100-b40"
-bw_modelcard = "kellag-m2m100-b51"
+fw_modelcard = "../gallek/gallek-m2m100-b51"
+bw_modelcard = "../gallek/kellag-m2m100-b51"
 
 fw_model = AutoModelForSeq2SeqLM.from_pretrained(fw_modelcard)
 fw_tokenizer = AutoTokenizer.from_pretrained(fw_modelcard)
@@ -85,7 +85,7 @@ max_history_length = 3
 native_chat_history = []
 
 with gr.Blocks() as demo:
-    chatbot = gr.Chatbot(label="GweLLM Chatbot", type="messages")
+    chatbot = gr.Chatbot(label="GweLLM Chatbot (Translation based)", type="messages")
     msg = gr.Textbox()
     clear = gr.ClearButton([msg, chatbot])
 
