@@ -23,7 +23,7 @@
 import gradio as gr
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
-fw_modelcard = "gallek-m2m100-b40"
+fw_modelcard = "gallek-m2m100-b51"
 bw_modelcard = "kellag-m2m100-b51"
 
 fw_model = AutoModelForSeq2SeqLM.from_pretrained(fw_modelcard)
@@ -54,7 +54,7 @@ def update_labels(direction, input_text, output_text):
     else:
         return gr.Textbox(output_text, label="French"), gr.Textbox(input_text, label="Breton")
 
-with gr.Blocks() as demo:
+with gr.Blocks(theme=gr.themes.Soft()) as demo:
 
     gr.Markdown("# Gallek French ↔️ Breton Translation Demo")
 

@@ -34,10 +34,11 @@ import torch
 
 # CHAT MODEL
 
-chat_modelcard      = 'meta-llama/Llama-3.2-3B-Instruct'
+chat_model_id = "MaziyarPanahi/Llama-3.2-3B-Instruct-GGUF"
+chat_gguf = "Llama-3.2-3B-Instruct.Q4_K_M.gguf"
 
-tokenizer = AutoTokenizer.from_pretrained(chat_modelcard)
-model = AutoModelForCausalLM.from_pretrained(chat_modelcard, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
+tokenizer = AutoTokenizer.from_pretrained(chat_model_id, gguf_file=chat_gguf)
+model = AutoModelForCausalLM.from_pretrained(chat_model_id, gguf_file=chat_gguf)
 
 chat_pipeline = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, truncation=True, max_length=512, return_full_text=False)
 
@@ -84,10 +85,18 @@ max_history_length = 3
 # keep a hidden model "native" language chat history
 native_chat_history = []
 
-with gr.Blocks() as demo:
-    chatbot = gr.Chatbot(label="GweLLM Chatbot (Translation based)", type="messages")
-    msg = gr.Textbox()
-    clear = gr.ClearButton([msg, chatbot])
+with gr.Blocks(theme=gr.themes.Soft()) as demo:
+    chatbot = gr.Chatbot(label="Breton Chatbot (Translation based)", type="messages")
+    msg = gr.Textbox(label='User Input')
+
+    def clear(chat_history):
+        """
+        Handles clearing chat
+        """
+        chat_history.clear()
+        native_chat_history.clear()
+
+    chatbot.clear(clear, inputs=[chatbot])
 
     def respond(message, chat_history):
         """
