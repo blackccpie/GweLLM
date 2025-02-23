@@ -34,7 +34,7 @@ import torch
 
 # CHAT MODEL
 
-chat_modelcard = 'meta-llama/Llama-3.2-3B-Instruct'
+chat_modelcard      = 'meta-llama/Llama-3.2-3B-Instruct'
 
 tokenizer = AutoTokenizer.from_pretrained(chat_modelcard)
 model = AutoModelForCausalLM.from_pretrained(chat_modelcard, quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map='auto')
@@ -71,10 +71,10 @@ def format_prompt_with_history(message, native_chat_history):
     # format the conversation history
     prompt = ""
     for interaction in native_chat_history:
-        prompt += f"<start_of_turn>{interaction['role']}\n{interaction['content']}<end_of_turn>\n"
+        prompt += f"<|start_header_id|>{interaction['role']}<|end_header_id|>\n{interaction['content']}<|eot_id|>\n"
 
     # add the current user message
-    prompt += f"<start_of_turn>user\ntu es un assistant francophone. Répond en une seule phrase sans formattage.\n{message}<end_of_turn>\n<start_of_turn>assistant\n"
+    prompt += f"<|start_header_id|>user<|end_header_id|>\ntu es un assistant francophone. Répond en une seule phrase sans formattage.<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n"
 
     return prompt
 
