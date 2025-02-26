@@ -86,7 +86,10 @@ max_history_length = 3
 native_chat_history = []
 
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
-    chatbot = gr.Chatbot(label="Breton Chatbot (Translation based)", type="messages")
+    
+    gr.Markdown("# BreizhBot\n## Breton Chatbot (Translation based)\nPart of the [GweLLM](https://github.com/blackccpie/GweLLM) project")
+    
+    chatbot = gr.Chatbot(label="Chat", type="messages")
     msg = gr.Textbox(label='User Input')
 
     def clear(chat_history):

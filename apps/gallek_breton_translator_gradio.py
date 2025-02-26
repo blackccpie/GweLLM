@@ -56,7 +56,7 @@ def update_labels(direction, input_text, output_text):
 
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
 
-    gr.Markdown("# Gallek French ↔️ Breton Translation Demo")
+    gr.Markdown("# Gallek French ↔️ Breton Translation Demo\nPart of the [GweLLM](https://github.com/blackccpie/GweLLM) project")
 
     direction = gr.State("fr_to_br")  # default direction is French to Breton
     

@@ -37,7 +37,7 @@ Here is a shortlist of the challenges I first identified:
       * Multilingual, Breton included in training corpus :+1:
       * Raw Breton performance is not good, will need fine-tuning!
 * Finding a Breton instruction dataset:
-  * Not found yet, will have to buid one myself :muscle:
+  * Not found yet, will have to build one myself :muscle:
 
 So this project has 3 "by-products":
 * A French -> Breton Translation Model called **Gallek** (meaning "French" in Breton)
@@ -58,7 +58,12 @@ What's inside the `gallek` subdirectory:
 * `train_translation_model.py` : used to fine-tune m2m100 model on the aforementionned datasets, with BLEU score evaluation at the end of training
 * `evaluate_translation_model.py` : used to compute BLEU score on a finetuned model (no training code)
 * `test_translation_model.py` : used to test the fine-tuned _gallek_ model on single input french text (also includes Apertium reverse translation)
-* `test_translation_model_gradio.py` : used to test the fine-tuned _gallek_ model using a Gradio UI
+
+:tv: Demos:
+* `apps/gallek_breton_translator_gradio.py` : Gradio UI used to evaluate the _gallek_ model (uses _kellag_ for reverse translation for now...)
+  * try it online :arrow_right: [Gallek Hugging Face Space](https://huggingface.co/spaces/amurienne/Gallek)
+* `apps/translated_breton_chat_radio.py` : Gradio UI used to evaluate the _gallek_ model used as a translator coupled with a chat model (also uses _kellag_ for reverse translation for now...)
+  * try it online :arrow_right: [BreizhBot HuggingFace Space](https://huggingface.co/spaces/amurienne/BreizhBot)
 
 TODOs:
 - [x] Add new datasets in training corpus (initial one was *ofis_publik*)
