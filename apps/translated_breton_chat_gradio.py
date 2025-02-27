@@ -20,27 +20,64 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import os
+
 import gradio as gr
 
 from transformers import (
     AutoTokenizer, 
     AutoModelForSeq2SeqLM, 
     AutoModelForCausalLM, 
-    BitsAndBytesConfig,
     pipeline
 )
 
-import torch
+from huggingface_hub import InferenceClient
 
 # CHAT MODEL
 
-chat_model_id = "MaziyarPanahi/Llama-3.2-3B-Instruct-GGUF"
-chat_gguf = "Llama-3.2-3B-Instruct.Q4_K_M.gguf"
+class chat_engine_gguf:
 
-tokenizer = AutoTokenizer.from_pretrained(chat_model_id, gguf_file=chat_gguf)
-model = AutoModelForCausalLM.from_pretrained(chat_model_id, gguf_file=chat_gguf)
+    def __init__(self):
+        chat_model_id = "MaziyarPanahi/Llama-3.2-3B-Instruct-GGUF"
+        chat_gguf = "Llama-3.2-3B-Instruct.Q4_K_M.gguf"
 
-chat_pipeline = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, truncation=True, max_length=512, return_full_text=False)
+        tokenizer = AutoTokenizer.from_pretrained(chat_model_id, gguf_file=chat_gguf)
+        model = AutoModelForCausalLM.from_pretrained(chat_model_id, gguf_file=chat_gguf)
+
+        self.chat_pipeline = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, truncation=True, max_length=512, return_full_text=False)
+
+    @staticmethod
+    def __format_prompt_with_history(message, history):
+        # format the conversation history
+        prompt = ""
+        for interaction in native_chat_history:
+            prompt += f"<|start_header_id|>{interaction['role']}<|end_header_id|>\n{interaction['content']}<|eot_id|>\n"
+
+        # add the current user message
+        prompt += f"<|start_header_id|>user<|end_header_id|>\ntu es un assistant francophone. Répond en une seule phrase sans formattage.\n{message}<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n"
+
+        return prompt
+
+    def answer(self, message, history):
+        prompt = chat_engine_gguf.__format_prompt_with_history(message, history)
+        return self.chat_pipeline(prompt, chat_template=None)[0]['generated_text']
+
+class chat_engine_hf_api:
+
+    def __init__(self):
+        self.client = InferenceClient(
+            "meta-llama/Llama-3.2-3B-Instruct",
+            token=os.environ['HF_TOKEN_API']
+        )
+
+    def answer(self, message, history):
+        return self.client.chat_completion(
+            history + [{"role": "user", "content": f"tu es un assistant francophone. Répond en une seule phrase sans formattage.\n{message}"}], 
+            max_tokens=512, 
+            temperature = 0.5).choices[0].message.content
+
+#chat_engine = chat_engine_hf_api()
+chat_engine = chat_engine_gguf()
 
 # TRANSLATION MODELS
 
@@ -64,21 +101,6 @@ def translate(text, forward: bool):
     else:
         return bw_translation_pipeline("treiñ eus ar galleg d'ar brezhoneg: " + text)[0]['translation_text']
 
-# answer function
-def answer(text):
-     return chat_pipeline(text, chat_template=None)[0]['generated_text']
-
-def format_prompt_with_history(message, native_chat_history):
-    # format the conversation history
-    prompt = ""
-    for interaction in native_chat_history:
-        prompt += f"<|start_header_id|>{interaction['role']}<|end_header_id|>\n{interaction['content']}<|eot_id|>\n"
-
-    # add the current user message
-    prompt += f"<|start_header_id|>user<|end_header_id|>\ntu es un assistant francophone. Répond en une seule phrase sans formattage.\n{message}<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n"
-
-    return prompt
-
 # maximum number of interactions to keep in history
 max_history_length = 3
 
@@ -89,7 +111,10 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     
     gr.Markdown("# BreizhBot\n## Breton Chatbot (Translation based)\nPart of the [GweLLM](https://github.com/blackccpie/GweLLM) project")
     
-    chatbot = gr.Chatbot(label="Chat", type="messages")
+    chatbot = gr.Chatbot(
+        label="Chat",
+        placeholder="Degemer mat, petra a c'hellan ober evidoc'h ?",
+        type="messages")
     msg = gr.Textbox(label='User Input')
 
     def clear(chat_history):
@@ -101,6 +126,13 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
 
     chatbot.clear(clear, inputs=[chatbot])
 
+    def user_input(message, chat_history):
+        """
+        Handles instant display of the user query (without waiting for model answer)
+        """
+        chat_history.append({"role": "user", "content": message})
+        return chat_history
+
     def respond(message, chat_history):
         """
         Handles bot response generation
@@ -111,14 +143,11 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
         fr_message = translate(message, forward=False)
         print(f"user fr -> {fr_message}")
 
-        prompt = format_prompt_with_history(fr_message, native_chat_history)
-
-        bot_fr_message = answer(prompt)
+        bot_fr_message = chat_engine.answer(fr_message, native_chat_history)
         print(f"bot fr -> {bot_fr_message}")
         bot_br_message = translate( bot_fr_message, forward=True)
         print(f"bot br -> {bot_br_message}")
-        
-        chat_history.append({"role": "user", "content": message})
+
         chat_history.append({"role": "assistant", "content": bot_br_message})
 
         native_chat_history.append({"role": "user", "content": fr_message})
@@ -131,7 +160,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
 
         return "", chat_history
 
-    msg.submit(respond, [msg, chatbot], [msg, chatbot])
+    msg.submit(user_input, [msg, chatbot], chatbot).then(respond, [msg, chatbot], [msg, chatbot])
 
 if __name__ == "__main__":
     demo.launch()
