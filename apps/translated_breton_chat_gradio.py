@@ -66,7 +66,8 @@ class chat_engine_hf_api:
 
     def __init__(self):
         self.client = InferenceClient(
-            "meta-llama/Llama-3.2-3B-Instruct",
+            "microsoft/Phi-3.5-mini-instruct",
+            #"meta-llama/Llama-3.2-3B-Instruct",
             token=os.environ['HF_TOKEN_API']
         )
 
@@ -76,8 +77,8 @@ class chat_engine_hf_api:
             max_tokens=512, 
             temperature = 0.5).choices[0].message.content
 
-#chat_engine = chat_engine_hf_api()
-chat_engine = chat_engine_gguf()
+chat_engine = chat_engine_hf_api()
+#chat_engine = chat_engine_gguf()
 
 # TRANSLATION MODELS
 
@@ -107,6 +108,9 @@ max_history_length = 3
 # keep a hidden model "native" language chat history
 native_chat_history = []
 
+# example queries
+example_queries = [{"text" : "Piv eo Albert Einstein ?"}, {"text" : "Petra eo kêr vrasañ Breizh ?"}, {"text" : "Kont din ur farsadenn bugel ?"}]
+
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     
     gr.Markdown("# BreizhBot\n## Breton Chatbot (Translation based)\nPart of the [GweLLM](https://github.com/blackccpie/GweLLM) project")
@@ -114,6 +118,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     chatbot = gr.Chatbot(
         label="Chat",
         placeholder="Degemer mat, petra a c'hellan ober evidoc'h ?",
+        examples=example_queries,
         type="messages")
     msg = gr.Textbox(label='User Input')
 
@@ -125,6 +130,12 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
         native_chat_history.clear()
 
     chatbot.clear(clear, inputs=[chatbot])
+
+    def example_input(evt: gr.SelectData):
+        """
+        Handles example input selection
+        """
+        return evt.value["text"]
 
     def user_input(message, chat_history):
         """
@@ -159,6 +170,8 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
             native_chat_history = native_chat_history[-max_history_length * 2:]
 
         return "", chat_history
+
+    chatbot.example_select(example_input, None, msg).then(user_input, [msg, chatbot], chatbot).then(respond, [msg, chatbot], [msg, chatbot])
 
     msg.submit(user_input, [msg, chatbot], chatbot).then(respond, [msg, chatbot], [msg, chatbot])
 
