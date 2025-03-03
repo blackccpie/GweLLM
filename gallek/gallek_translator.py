@@ -50,7 +50,7 @@ class gallek(base_translator):
     French to Breton translator.
     """
     def __init__(self, chdir: str = './', max_length: int = 400, batch_size: int = 1):
-        super().__init__(checkpoint="gallek-m2m100-b40", src_lang='fr', tgt_lang='br', chdir=chdir, max_length=max_length, batch_size=batch_size)
+        super().__init__(checkpoint="gallek-m2m100", src_lang='fr', tgt_lang='br', chdir=chdir, max_length=max_length, batch_size=batch_size)
 
     def translate_fr2br_batch(self, samples: str):
         return self._translate_batch(samples)
@@ -63,7 +63,7 @@ class kellag(base_translator):
     Breton to French translator.
     """
     def __init__(self, chdir: str = './', max_length: int = 400, batch_size: int = 1):
-        super().__init__(checkpoint="kellag-m2m100-b51", src_lang='br', tgt_lang='fr', chdir=chdir, max_length=max_length, batch_size=batch_size)
+        super().__init__(checkpoint="kellag-m2m100", src_lang='br', tgt_lang='fr', chdir=chdir, max_length=max_length, batch_size=batch_size)
 
     def translate_br2fr_batch(self, samples: str):
         return self._translate_batch(samples)
