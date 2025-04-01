@@ -20,71 +20,43 @@
 # https://magpie-align.github.io/
 
 import os
-import re
 
 from datasets import Dataset
 
-modelcard = 'meta-llama/Meta-Llama-3-70B-Instruct'
-pre_query_template_with_system_prompt = "<|start_header_id|>user<|end_header_id|>je suis un français, voici ma question: "
+from magpie_instruct_processor import extract_question, extract_answer
 
-from huggingface_hub import InferenceClient
+from litellm import text_completion, completion
 
-client = InferenceClient(model=modelcard, token=os.environ['HF_TOKEN_API'], headers={"X-use-cache": "false"})
+#modelcard = 'huggingface/meta-llama/Meta-Llama-3-70B-Instruct'
+#modelcard = 'huggingface/mistralai/Mixtral-8x7B-Instruct-v0.1'
+#pre_query_template_with_system_prompt = "<|start_header_id|>user<|end_header_id|>je suis un français, voici ma question: "
 
-def clean_question(question):
-    """
-    Clean the question from unwanted formatting
-    """
-    # regex explanation:
-    # ^\d+[\).]?\s* → removes leading numbers (e.g., "1)", "5.", etc.) and spaces
-    # ^["«]* → removes leading quotes ("), guillemets («), and dash (-)
-    question = re.sub(r'^(?:\d+[\).]?\s*)?["«-]*', '', question).strip()
-    # ensure the first letter is capitalized
-    return question[0].upper() + question[1:]
+modelcard = "ollama/mistral-small:latest"
+endpoint = 'http://10.55.8.5:11434'
+pre_query_template_with_system_prompt = "[INST]je suis un français, voici ma question: "
 
-def extract_question(model_output):
-    """
-    Extract the question from model generation
-    """
-    try:
-        extract_question = f"{model_output.split('?')[0].strip()}?"
-        print(rf"extracted Q: {extract_question}")
-        return clean_question(extract_question)
-    except:
-        print("failed extracting question")
-        return None
-
-def clean_answer(model_output):
-    """
-    Clean the answer from unwanted formatting
-    """
-    # use regex to remove leading spaces and a colon (if present), along with spaces after the colon.
-    answer = re.sub(r'^\s*:\s*', '', model_output).strip()
-    return answer
-
-def extract_answer(model_output):
-    """
-    Clean the question from leading unwanted formatting
-    """
-    try:
-        extract_answer = f"{model_output.split('.')[0].strip()}."
-        print(rf"extracted A: {extract_answer}")
-        return clean_answer(extract_answer)
-    except:
-        print("failed extracting answer")
-        return None
+#client = InferenceClient(model=modelcard, token=os.environ['HF_TOKEN_API'], headers={"X-use-cache": "false"})
 
 questions = []
 answers = []
 
 # create QA pairs iteratively
-for i in range(10):
-    q_gen = client.text_generation(pre_query_template_with_system_prompt, do_sample=True, temperature=0.8)
+for i in range(1):
+    q_gen = text_completion(
+        model=modelcard,
+        api_base=endpoint,
+        prompt=pre_query_template_with_system_prompt, 
+        temperature=0.8, 
+        stream=False,
+        cache={"no-cache": True}
+    ).choices[0].text
     question = extract_question(q_gen)
     print(f"clean:\n\033[96m{question}\033[0m")
     print("--")
-    a_gen = client.chat_completion(
-        [
+    a_gen = completion(
+        model=modelcard,
+        api_base=endpoint,
+        messages = [
             {
                 "role": "user", 
                 "content": 
@@ -97,7 +69,9 @@ for i in range(10):
                 """
             }
         ],
-        temperature=0.5
+        temperature=0.5,
+        stream=False,
+        cache={"no-cache": True}
     ).choices[0].message.content
     answer = extract_answer(a_gen)
     print(f"clean A:\n\033[92m{answer}\033[0m")
