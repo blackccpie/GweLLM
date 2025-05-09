@@ -37,7 +37,7 @@ model = AutoModelForCausalLM.from_pretrained(modelcard, device_map='auto')
 model.eval()
 model.config.use_cache = True
 
-pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, truncation=True, max_new_tokens=100, return_full_text=False)
+pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, max_new_tokens=100, return_full_text=False)
 
 questions = []
 answers = []
