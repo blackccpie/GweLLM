@@ -25,45 +25,51 @@ from datasets import Dataset
 
 from magpie_instruct_processor import extract_question, extract_answer
 
-from litellm import text_completion, completion
+from litellm import litellm, disable_cache
 
-#modelcard = 'huggingface/meta-llama/Meta-Llama-3-70B-Instruct'
+modelcard = 'huggingface/meta-llama/Llama-3.3-70B-Instruct'
+#modelcard = 'huggingface/google/gemma-3-27b-it'
 #modelcard = 'huggingface/mistralai/Mixtral-8x7B-Instruct-v0.1'
-#pre_query_template_with_system_prompt = "<|start_header_id|>user<|end_header_id|>je suis un français, voici ma question: "
+endpoint = None
 
-modelcard = "ollama/mistral-small:latest"
-endpoint = 'http://10.55.8.5:11434'
-pre_query_template_with_system_prompt = "[INST]je suis un français, voici ma question: "
-
-#client = InferenceClient(model=modelcard, token=os.environ['HF_TOKEN_API'], headers={"X-use-cache": "false"})
+#modelcard = "ollama/mistral-small:latest"
+#modelcard = "ollama/hf.co/croissantllm/CroissantLLMChat-v0.1-GGUF:Q8_0"
+#endpoint = 'http://10.55.8.5:11434'
 
 questions = []
 answers = []
 
+litellm.disable_cache()
+
 # create QA pairs iteratively
-for i in range(1):
-    q_gen = text_completion(
-        model=modelcard,
-        api_base=endpoint,
-        prompt=pre_query_template_with_system_prompt, 
-        temperature=0.8, 
-        stream=False,
-        cache={"no-cache": True}
-    ).choices[0].text
-    question = extract_question(q_gen)
-    print(f"clean:\n\033[96m{question}\033[0m")
-    print("--")
-    a_gen = completion(
+for i in range(5):
+    q_gen = litellm.completion(
         model=modelcard,
         api_base=endpoint,
         messages = [
             {
                 "role": "user", 
                 "content": 
-                f"""répond directement à la question suivante en UNE SEULE phrase complète, en commençant directement par du texte.
-        
-                Par exemple: Quelle est la capitale de la France?
-                Sortie attendue: La capitale de la France est Paris.
+                f"Propose moi un énoncé de question aléatoire pour la {i}ème question d'un quizz de culture générale, en répondant uniquement par la question."
+            }
+        ],
+        temperature=0.8,
+        stream=False,
+        max_tokens=100,
+        #extra_headers={"X-use-cache": "false"}, # TBC or HF Inference? (https://github.com/huggingface/huggingface_hub/issues/2081)
+        cache={"no-cache": True}
+    ).choices[0].message.content
+    question = extract_question(q_gen)
+    print(f"clean:\n\033[96m{question}\033[0m")
+    print("--")
+    a_gen = litellm.completion(
+        model=modelcard,
+        api_base=endpoint,
+        messages = [
+            {
+                "role": "user", 
+                "content": 
+                f"""répond directement à la question suivante en UNE SEULE phrase complète, en commençant directement par du texte, sans paraphraser la question.
 
                 Question: {question}
                 """
@@ -71,7 +77,6 @@ for i in range(1):
         ],
         temperature=0.5,
         stream=False,
-        cache={"no-cache": True}
     ).choices[0].message.content
     answer = extract_answer(a_gen)
     print(f"clean A:\n\033[92m{answer}\033[0m")
