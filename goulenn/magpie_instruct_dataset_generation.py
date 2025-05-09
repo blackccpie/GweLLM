@@ -26,30 +26,34 @@ from datasets import Dataset
 
 from magpie_instruct_processor import extract_question, extract_answer
 
+from tqdm import tqdm
+
 modelcard = 'croissantllm/CroissantLLMChat-v0.1'
 pre_query_template_with_system_prompt = "<|im_start|>user\nje suis un français, voici ma question: "
 
 # load the GweLLM model and tokenizer
 tokenizer = AutoTokenizer.from_pretrained(modelcard, use_fast=True, legacy=False)
 model = AutoModelForCausalLM.from_pretrained(modelcard, device_map='auto')
+model.eval()
+model.config.use_cache = True
 
-pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, truncation=True, max_length=512, return_full_text=False)
+pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, do_sample=True, temperature=0.5, truncation=True, max_new_tokens=100, return_full_text=False)
 
 questions = []
 answers = []
 
 # create QA pairs iteratively
-for i in range(10):
+for i in tqdm(range(1000), unit="QA", desc="Generating QA pairs"):
     q_gen = pipe(pre_query_template_with_system_prompt, chat_template=None)[0]['generated_text']
     question = extract_question(q_gen)
     print(f"clean:\n\033[96m{question}\033[0m")
     print("--")
     a_gen = pipe(
         f"""<|im_start|>user
-        répond directement à la question suivante en UNE SEULE phrase complète, en commençant directement par du texte.
+        répond directement à la question suivante en UNE SEULE phrase complète, en commençant directement par du texte, sans paraphraser la question.
         
         Par exemple: Quelle est la capitale de la France?
-        Sortie attendue: La capitale de la France est Paris.
+        Sortie attendue: Il s'agit de Paris.
 
         Question: {question}
         <|im_end|><|im_start|>assistant"""
